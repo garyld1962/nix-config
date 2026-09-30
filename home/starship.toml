@@ -1,0 +1,52 @@
+# One compact, cross-platform prompt.  It deliberately shows only the current
+# directory, useful Git state, slow-command timing, and active project runtimes.
+
+add_newline = true
+command_timeout = 500
+scan_timeout = 30
+format = "$directory$git_branch$git_status$fill$cmd_duration$line_break$character"
+right_format = "$python$nodejs$rust$golang$dotnet"
+
+[directory]
+style = "bold cyan"
+truncation_length = 3
+truncation_symbol = "…/"
+truncate_to_repo = true
+
+[git_branch]
+symbol = "git:"
+style = "bold purple"
+format = "[$symbol$branch]($style) "
+
+[git_status]
+style = "yellow"
+format = "[$all_status$ahead_behind]($style) "
+
+[cmd_duration]
+min_time = 2_000
+style = "yellow"
+format = "took [$duration]($style) "
+
+[character]
+success_symbol = "[❯](bold green)"
+error_symbol = "[❯](bold red)"
+
+[python]
+symbol = "py "
+format = "[$symbol$version]($style) "
+
+[nodejs]
+symbol = "node "
+format = "[$symbol$version]($style) "
+
+[rust]
+symbol = "rust "
+format = "[$symbol$version]($style) "
+
+[golang]
+symbol = "go "
+format = "[$symbol$version]($style) "
+
+[dotnet]
+symbol = "dotnet "
+format = "[$symbol$version]($style) "
