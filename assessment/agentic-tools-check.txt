@@ -1,0 +1,23 @@
+== uv (prerequisite)
+  ok    uv 0.11.21 at /home/gary/.nix-profile/bin/uv
+  ok    uv tool bin dir on PATH (/home/gary/.local/bin)
+  ok    python available to uv (/home/gary/.nix-profile/bin/python)
+
+== package manager: apt
+
+== tools
+  ok    ripgrep (/home/gary/.nix-profile/bin/rg)
+  ok    fd (/home/gary/.nix-profile/bin/fd)
+  ok    jq (/home/gary/.nix-profile/bin/jq)
+  ok    rsync (/home/gary/.nix-profile/bin/rsync)
+  ok    shellcheck (/home/gary/.nix-profile/bin/shellcheck)
+  ok    ast-grep (/home/gary/.nix-profile/bin/ast-grep)
+  ok    sd (/home/gary/.nix-profile/bin/sd)
+  ok    gh (/home/gary/.nix-profile/bin/gh)
+  ok    gh-axi (/home/gary/.nix-profile/bin/gh-axi)
+  ok    just (/home/gary/.nix-profile/bin/just)
+  ok    hyperfine (/home/gary/.nix-profile/bin/hyperfine)
+  ok    xh (/home/gary/.nix-profile/bin/xh)
+  ok    defuddle (/home/gary/.nix-profile/bin/defuddle)
+
+All tools present.

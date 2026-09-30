@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Your reproducible WSL environment</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/daisyui@5.5.19/daisyui.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/daisyui@5.5.19/themes.css">
+<script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4.2.4/dist/index.global.js"></script>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#f5f7fa;color:#172337;font-family:system-ui,sans-serif}main{max-width:1100px;margin:auto;padding:40px 24px 72px}section{margin-top:30px}h1{font-size:clamp(2rem,5vw,3.3rem);line-height:1.1;letter-spacing:-.04em;max-width:780px}h2{font-size:1.45rem;font-weight:700;margin-bottom:14px}h3{font-size:1.1rem;font-weight:700}p{line-height:1.65;margin-top:10px}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}.grid>*{min-width:0}.card{background:white;border:1px solid #dce3ed;border-radius:16px;padding:24px}.recommended{border:2px solid #3562ae}p,h1,h2,h3,li,td,th,code,.badge{overflow-wrap:anywhere}table{width:100%;border-collapse:collapse;table-layout:fixed}th,td{text-align:left;padding:14px 10px;vertical-align:top;border-bottom:1px solid #dce3ed}th{font-size:.8rem;text-transform:uppercase;letter-spacing:.07em}a{color:#2455a2;text-decoration:underline}.muted{color:#536175}.eyebrow{font-size:.8rem;letter-spacing:.15em;text-transform:uppercase;color:#42618f;font-weight:700;margin-bottom:15px}label.choice{display:flex;gap:12px;align-items:flex-start;padding:12px 0}input{flex-shrink:0}textarea{width:100%;min-height:90px}button{margin-top:16px}ol{padding-left:24px;list-style:decimal}li{padding:6px 0;line-height:1.6}@media(max-width:700px){.grid{grid-template-columns:minmax(0,1fr)}main{padding:24px 16px}td,th{padding:10px 5px;font-size:.87rem}.card{padding:18px}}
+</style>
+</head>
+<body><main>
+<div class="eyebrow">Initial assessment · 11 September 2026</div>
+<h1>Build your WSL environment from a clean starting point.</h1>
+<p class="muted">Start with a disposable Ubuntu instance, then choose which parts of your everyday setup belong in configuration.</p>
+<section class="card">
+<h2>The test environment</h2>
+<p id="lab-status"><strong>Ubuntu-Nix-Test is ready, and a full reset passed.</strong> The reset removed a probe file, restored the baseline, and preserved the original Ubuntu registration and default distribution. Nix and the first Home Manager configuration are now installed. Shell and runtime checks passed. A full reset and rebuild produced the same configuration, and a restart check passed.</p>
+<p>Your working distribution is <code>Ubuntu</code>, running Ubuntu 24.04.4 on WSL2. The test image uses Ubuntu 24.04.5, with a <code>gary</code> account and systemd. Its baseline belongs in <code>C:\Users\sql_1\WSL\nix-lab</code>, outside the test filesystem.</p>
+<p>A reset discards everything added inside the test instance after the baseline. WSL can also access Windows files, so this is a disposable Linux filesystem, not a security sandbox. The test account has passwordless sudo for setup.</p>
+</section>
+<section>
+<h2>Choose how much Nix should manage</h2>
+<div class="grid">
+<article class="card recommended"><span class="badge badge-primary">Recommended starting point</span><h3 class="mt-4">Ubuntu + Nix + Home Manager</h3><p>Nix installs packages from a written configuration. Home Manager manages user settings such as your shell and Git configuration.</p><p>Ubuntu keeps responsibility for the base operating system. Docker services, system packages, and WSL setup still need separate configuration.</p><p><a href="https://nixos.org/download/">Nix installation</a> · <a href="https://github.com/nix-community/home-manager">Home Manager</a></p></article>
+<article class="card"><h3>NixOS-WSL + Home Manager</h3><p>NixOS also manages Linux services and system settings from configuration. This gives us broader coverage if your goal is to rebuild the whole Linux environment.</p><p>It changes the Linux distribution. We would need to check your custom tools, downloaded binaries, browser tooling, and GPU workflow on NixOS.</p><p><a href="https://nix-community.github.io/NixOS-WSL/install.html">NixOS-WSL installation</a></p></article>
+</div>
+<p class="muted">The first implementation uses Ubuntu, Nix, and Home Manager. Nix now manages Node versions in the test environment; NVM remains in your original working Ubuntu.</p>
+</section>
+<section>
+<h2>What the initial scan found</h2>
+<p>This is an inventory of candidates, not a list of everything you still use. Package and file presence does not prove a tool works or is needed.</p>
+<table><thead><tr><th style="width:23%">Area</th><th style="width:45%">Evidence in your current Ubuntu</th><th>Proposed treatment</th></tr></thead><tbody>
+<tr><td>Shell and command-line tools</td><td>Zsh, Starship, aliases, functions, direnv, Git, ripgrep, fd, fzf, bat, jq, tmux, just</td><td>Good first migration group. Review custom shell behavior before copying it.</td></tr>
+<tr><td>Development runtimes</td><td>Node 22 through NVM, pnpm, uv tools, Python, build tools; shell references to Cargo and Bun</td><td>Shared essentials in Home Manager; project-specific versions in project environments.</td></tr>
+<tr><td>AI and browser tools</td><td>Codex, Gemini, Claude, Copilot, Kimi, browser automation, Chrome, local command wrappers</td><td>Choose the tools you use. Check their installation and update methods individually.</td></tr>
+<tr><td>Services and GPU</td><td>Docker Engine and Compose packages, CUDA 13, NVIDIA container tooling, SSH, Syncthing</td><td>Separate decisions. Check active usage and data before enabling services.</td></tr>
+<tr><td>Credentials and personal data</td><td>1Password CLI, a shell secrets loader, application configuration directories</td><td>Recreate authentication separately. Keep tokens, keys, repositories, databases, and caches out of package configuration.</td></tr>
+</tbody></table>
+<p class="muted">The scan read package lists, filenames, and shell integration markers. Secret values were not copied into the assessment. Service status, Windows settings, and project requirements still need review. The first Nix configuration now covers shell tools, Node 22, pnpm 10, Python 3.12, and uv.</p>
+</section>
+<section class="grid">
+<article class="card"><h2>Your selected first pass</h2><p>You selected shell and everyday command-line tools, plus Node, pnpm, Python, and uv.</p><p>The proposed shell group is Zsh, Starship, direnv, Git, ripgrep, fd, fzf, bat, jq, tmux, just, curl, and wget. We will review aliases and functions before moving them, because some depend on tools outside this first pass.</p><h3 class="mt-4">How we will test it</h3><ol><li>Restore the blank baseline.</li><li>Install Nix using a recorded bootstrap process.</li><li>Apply the configuration with pinned dependency versions.</li><li>Check Zsh startup, command availability, a small Node/pnpm project, and a Python environment made with uv.</li><li>Apply it again to check repeatability, then repeat from a reset when the group is complete.</li></ol><p>A saved WSL image makes resets fast. The configuration and version lock file are what will describe the environment we can rebuild. <a href="https://learn.microsoft.com/en-us/windows/wsl/basic-commands">WSL export, import, and reset commands</a>.</p></article>
+<form class="card" id="scope" data-lavish-question="migration-scope"><h2>What should we include first?</h2><p>Select the groups you want in the first migration pass. These choices stay on this page until you queue and send them.</p>
+<label class="choice"><input class="checkbox checkbox-primary" type="checkbox" name="scope" value="Shell and everyday CLI tools" checked><span>Shell and everyday command-line tools</span></label>
+<label class="choice"><input class="checkbox checkbox-primary" type="checkbox" name="scope" value="Node, pnpm, Python, and uv" checked><span>Node, pnpm, Python, and uv</span></label>
+<label class="choice"><input class="checkbox checkbox-primary" type="checkbox" name="scope" value="AI CLIs and custom wrappers"><span>AI command-line tools and custom wrappers</span></label>
+<label class="choice"><input class="checkbox checkbox-primary" type="checkbox" name="scope" value="Chrome and browser automation"><span>Chrome and browser automation</span></label>
+<label class="choice"><input class="checkbox checkbox-primary" type="checkbox" name="scope" value="Docker and background services"><span>Docker and background services</span></label>
+<label class="choice"><input class="checkbox checkbox-primary" type="checkbox" name="scope" value="CUDA and GPU containers"><span>CUDA and GPU containers</span></label>
+<label for="notes">Tools you rely on, things to omit, or a preference for NixOS:</label><textarea id="notes" name="notes" class="textarea textarea-bordered mt-2"></textarea>
+<button class="btn btn-primary" type="submit">Queue migration choices</button><p id="feedback-status" role="status" class="muted">After queuing, use Send to Agent in the review toolbar.</p></form>
+</section>
+<section class="card"><h2>Runtime decision recorded</h2><p>On 17 September, you approved using Nix to manage Node versions. The first configuration uses Node 22, pnpm 10, Python 3.12, and uv. Exact versions come from flake.lock.</p><p>Home Manager also manages Zsh, Starship, direnv, Git, and the selected command-line tools. Your portable shell helpers and prompt settings are included. Docker helpers and authentication setup remain for later passes.</p></section>
+</main><script>
+document.getElementById('scope').addEventListener('submit',function(event){event.preventDefault();const data=new FormData(this);const groups=data.getAll('scope');const notes=data.get('notes').trim();if(!window.lavish){document.getElementById('feedback-status').textContent='Open this page in Lavish to send feedback, or paste your choices into the chat.';return}window.lavish.queuePrompt('For the first WSL migration pass, include: '+(groups.join('; ')||'no groups yet')+'. Notes: '+(notes||'none'),{tag:'migration-scope',queueKey:'migration-scope',element:this,data:{groups,notes}});document.getElementById('feedback-status').textContent='Choices queued. Use Send to Agent in the review toolbar to send them.'});
+</script></body></html>

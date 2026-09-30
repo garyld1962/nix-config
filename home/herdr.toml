@@ -1,0 +1,10 @@
+# Managed by Home Manager. Edit this source file and apply the configuration.
+onboarding = false
+
+[terminal]
+default_shell = "zsh"
+shell_mode = "auto"
+new_cwd = "follow"
+
+[theme]
+name = "terminal"

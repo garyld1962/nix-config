@@ -1,0 +1,8 @@
+{
+  "name": "nix-gh-axi",
+  "version": "0.1.35",
+  "private": true,
+  "dependencies": {
+    "gh-axi": "0.1.35"
+  }
+}

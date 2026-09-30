@@ -1,0 +1,13 @@
+{
+  "before_reset": "/nix/store/5lfzycnnd904390r4z9f2gdl3m2fmi6k-home-manager-generation",
+  "flake_lock_sha256": "2cf2f34a2e092c81c363207b647b137904bafdd6dab7446cb316cfbdf585f512",
+  "npm_lock_sha256": "a0f807a9f56ab26dd48bce905ec63dd772a9e77f33db030477fbced9f373c12b",
+  "installer_sha256": "b219fa30068f91c11fa7e580e675999a5d4e27bc53f19720ed717ac91ee76f8b",
+  "verified_on": "2026-09-17",
+  "after_reset": "/nix/store/5lfzycnnd904390r4z9f2gdl3m2fmi6k-home-manager-generation",
+  "repeat_activation": "/nix/store/5lfzycnnd904390r4z9f2gdl3m2fmi6k-home-manager-generation",
+  "installer_check_exit": 0,
+  "fresh_rebuild_passed": true,
+  "gh_axi_version": "0.1.35",
+  "npm_deps_hash": "sha256-9nDOcnVkp6DNChnQIQYDjbLaVDvP+T0t3xYmFN1f3v8="
+}

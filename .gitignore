@@ -1,0 +1,13 @@
+result
+result-*
+*.tar
+*.tar.gz
+*.wsl
+*.vhdx
+.env
+.env.*
+.lavish/*.excalidraw
+.lavish/*.png
+__pycache__/
+*.pyc
+node_modules/
