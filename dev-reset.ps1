@@ -7,7 +7,7 @@ Leaves .wslconfig and the image cache untouched.
 #>
 [CmdletBinding()]
 param(
-    [ValidatePattern('^[A-Za-z0-9._-]+$')][string]$Distro = 'Ubuntu'
+    [ValidatePattern('^[A-Za-z0-9][A-Za-z0-9._-]*$')][string]$Distro = 'Ubuntu'
 )
 $ErrorActionPreference = 'Stop'
 $common = Join-Path $PSScriptRoot 'scripts\wsl-common.ps1'
@@ -19,7 +19,7 @@ if (-not ((Get-WslDistroList) -contains $Distro)) { throw "'$Distro' is not regi
 if (-not (Get-DevSetupUser -Name $Distro)) { throw 'dev-reset only removes distributions created by dev-setup.' }
 $expected = Join-Path $env:LOCALAPPDATA "WSL\$Distro"
 $actual = Get-WslDistroBasePath -Name $Distro
-if ([string]$actual.TrimEnd('\') -ine $expected.TrimEnd('\')) {
+if (-not $actual -or ($actual.TrimEnd('\') -ine $expected.TrimEnd('\'))) {
     throw "'$Distro' is installed at '$actual', not the dev-setup location '$expected'. Refusing to remove it."
 }
 

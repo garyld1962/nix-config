@@ -49,9 +49,12 @@ function Get-Sha256SumsEntry {
 
 function ConvertTo-WslVersion {
     param([string[]]$Lines)
+    # Output is localized; the WSL version is the first line that carries a version number.
     foreach ($line in @($Lines)) {
-        $clean = ($line -replace "`0", '')
-        if ($clean -imatch 'WSL version:\s*(\d+\.\d+\.\d+(\.\d+)?)') { return [version]$Matches[1] }
+        $clean = ($line -replace "`0", '').Trim()
+        if (-not $clean) { continue }
+        if ($clean -match '(\d+\.\d+\.\d+(\.\d+)?)') { return [version]$Matches[1] }
+        return $null
     }
     $null
 }
@@ -64,8 +67,13 @@ function ConvertFrom-DevSetupMarker {
 
 function Format-WslStdinPayload {
     param([Parameter(Mandatory)][string]$Script, [string]$SecretLine)
+    # The secret travels base64-encoded so the console's output encoding cannot alter it.
+    # bash -s runs the first stdin line as script, so the read line precedes the secret.
     $payload = ''
-    if ($PSBoundParameters.ContainsKey('SecretLine')) { $payload = "IFS= read -r SECRET`n$SecretLine`n" }
+    if ($PSBoundParameters.ContainsKey('SecretLine')) {
+        $encoded = [Convert]::ToBase64String([Text.Encoding]::UTF8.GetBytes($SecretLine))
+        $payload = "IFS= read -r SECRET_B64`n$encoded`nSECRET=`$(printf %s `"`$SECRET_B64`" | base64 -d); unset SECRET_B64`n"
+    }
     $payload + $Script + "`nexit `$?`n"
 }
 
@@ -84,6 +92,8 @@ function Test-WslInstalled {
     if (-not (Get-Command wsl.exe -ErrorAction SilentlyContinue)) { return $false }
     $ErrorActionPreference = 'Continue'
     $null = & wsl.exe --status 2>$null
+    if ($LASTEXITCODE -eq 0) { return $true }
+    $null = & wsl.exe --version 2>$null
     $LASTEXITCODE -eq 0
 }
 
@@ -95,16 +105,17 @@ function Get-WslVersion {
 }
 
 function Get-WslDistroList {
-    $output = @(& wsl.exe --list --quiet)
-    if ($LASTEXITCODE -ne 0) { throw 'Cannot read WSL distributions.' }
-    [string[]]@($output | ForEach-Object { ([string]$_ -replace "`0", '').Trim() } | Where-Object { $_ })
+    # The registry is the source wsl.exe itself uses; `wsl --list` exits non-zero when no distribution exists.
+    $key = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Lxss'
+    if (-not (Test-Path $key)) { return [string[]]@() }
+    [string[]]@(Get-ChildItem $key | Get-ItemProperty | ForEach-Object { [string]$_.DistributionName } | Where-Object { $_ })
 }
 
 function Get-WslDistroBasePath {
     param([Parameter(Mandatory)][string]$Name)
     $entry = Get-ChildItem 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Lxss' |
         Get-ItemProperty | Where-Object { $_.DistributionName -eq $Name } | Select-Object -First 1
-    if (-not $entry) { return $null }
+    if (-not $entry -or -not $entry.BasePath) { return $null }
     [string]$entry.BasePath -replace '^\\\\\?\\', ''
 }
 
@@ -141,13 +152,7 @@ function Invoke-WslBashScript {
     $wslArgs += @('--exec', 'bash', '-s')
     $payloadArgs = @{ Script = $Script }
     if ($PSBoundParameters.ContainsKey('SecretLine')) { $payloadArgs.SecretLine = $SecretLine }
-    $saved = $OutputEncoding
-    try {
-        $OutputEncoding = New-Object Text.UTF8Encoding $false
-        Format-WslStdinPayload @payloadArgs | & wsl.exe @wslArgs
-    } finally {
-        $OutputEncoding = $saved
-    }
+    Format-WslStdinPayload @payloadArgs | & wsl.exe @wslArgs
     if ($LASTEXITCODE -ne 0) { throw "Script failed in $Name with exit code $LASTEXITCODE." }
 }
 

@@ -89,6 +89,9 @@ Describe 'ConvertTo-WslVersion' {
         $raw = ('WSL version: 2.6.1.0'.ToCharArray() | ForEach-Object { "$_`0" }) -join ''
         ConvertTo-WslVersion -Lines @($raw, 'Kernel version: 6.6.87.2-1') | Should -Be ([version]'2.6.1.0')
     }
+    It 'parses localized output by position' {
+        ConvertTo-WslVersion -Lines @('', 'WSL-Version: 2.3.26.0', 'Kernelversion: 5.15.167.4-1') | Should -Be ([version]'2.3.26.0')
+    }
     It 'returns null for help text' {
         ConvertTo-WslVersion -Lines @('Usage: wsl.exe [Argument]') | Should -BeNullOrEmpty
     }
@@ -106,9 +109,12 @@ Describe 'ConvertFrom-DevSetupMarker' {
 }
 
 Describe 'Format-WslStdinPayload' {
-    It 'puts the read line before the secret and keeps the secret verbatim' {
+    It 'sends the secret as base64 after the read line and decodes it into SECRET' {
         Format-WslStdinPayload -Script "set -eu`necho hi" -SecretLine ' p\a$s ' |
-            Should -BeExactly "IFS= read -r SECRET`n p\a`$s `nset -eu`necho hi`nexit `$?`n"
+            Should -BeExactly "IFS= read -r SECRET_B64`nIHBcYSRzIA==`nSECRET=`$(printf %s `"`$SECRET_B64`" | base64 -d); unset SECRET_B64`nset -eu`necho hi`nexit `$?`n"
+    }
+    It 'encodes non-ASCII secrets as UTF-8' {
+        Format-WslStdinPayload -Script 'true' -SecretLine ([string][char]0xE9) | Should -Match "`nw6k=`n"
     }
     It 'omits the read line without a secret' {
         Format-WslStdinPayload -Script 'set -eu' | Should -BeExactly "set -eu`nexit `$?`n"

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 if [[ ${WSL_DISTRO_NAME:-} != Ubuntu-Nix-Test ]] ||
-   ! grep -Fxq 'Ubuntu-Nix-Test blank baseline v1' /etc/nix-lab-baseline; then
+   ! grep -Fxq 'Ubuntu-Nix-Test blank baseline v2' /etc/nix-lab-baseline; then
   echo 'This script only operates inside Ubuntu-Nix-Test.' >&2
   exit 1
 fi
