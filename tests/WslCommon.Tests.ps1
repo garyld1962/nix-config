@@ -64,6 +64,22 @@ Describe 'Merge-WslConfigMirrored' {
     }
 }
 
+Describe 'Get-WslConfigNetworkingMode' {
+    It 'returns the value inside [wsl2] with surrounding whitespace removed' {
+        Get-WslConfigNetworkingMode -Lines @('[wsl2]', 'networkingMode = NAT ', '[experimental]') | Should -BeExactly 'NAT'
+    }
+    It 'returns the value from this machine''s file' {
+        Get-WslConfigNetworkingMode -Lines ($script:Mirrored -split "`r`n") | Should -BeExactly 'Mirrored'
+    }
+    It 'returns null when <Case>' -TestCases @(
+        @{ Case = 'the key is outside [wsl2]'; Lines = @('[experimental]', 'networkingMode=mirrored') },
+        @{ Case = 'the key is commented'; Lines = @('[wsl2]', '#networkingMode=mirrored') },
+        @{ Case = 'there is no file content'; Lines = @() }
+    ) {
+        Get-WslConfigNetworkingMode -Lines $Lines | Should -BeNullOrEmpty
+    }
+}
+
 Describe 'Get-Sha256SumsEntry' {
     BeforeAll {
         $script:Image = 'ubuntu-26.04.1-wsl-amd64.wsl'

@@ -7,33 +7,42 @@ function Test-UbuntuUsername {
     [bool]($Name -cmatch '^[a-z][-a-z0-9_]*$' -and $Name.Length -le 32 -and $Name -ne 'root')
 }
 
+function Find-WslConfigNetworkingMode {
+    # Locates the [wsl2] section and its networkingMode key. Indices are -1 when absent.
+    param([string[]]$Lines)
+    $found = [pscustomobject]@{ Header = -1; End = @($Lines).Count; Key = -1; Value = $null }
+    for ($i = 0; $i -lt @($Lines).Count; $i++) {
+        if ($Lines[$i] -imatch '^\s*\[wsl2\]\s*$') { $found.Header = $i; break }
+    }
+    if ($found.Header -lt 0) { return $found }
+    for ($i = $found.Header + 1; $i -lt @($Lines).Count; $i++) {
+        if ($Lines[$i] -match '^\s*\[') { $found.End = $i; break }
+    }
+    for ($i = $found.Header + 1; $i -lt $found.End; $i++) {
+        if ($Lines[$i] -imatch '^\s*networkingMode\s*=\s*(.*?)\s*$') { $found.Key = $i; $found.Value = $Matches[1]; break }
+    }
+    $found
+}
+
+function Get-WslConfigNetworkingMode {
+    param([string[]]$Lines)
+    (Find-WslConfigNetworkingMode -Lines $Lines).Value
+}
+
 function Merge-WslConfigMirrored {
     param([Parameter(Mandatory)][string]$Path)
     $result = New-Object 'Collections.Generic.List[string]'
     if (Test-Path -LiteralPath $Path) { $result.AddRange([string[]][IO.File]::ReadAllLines($Path)) }
-    $header = -1
-    for ($i = 0; $i -lt $result.Count; $i++) {
-        if ($result[$i] -imatch '^\s*\[wsl2\]\s*$') { $header = $i; break }
-    }
-    if ($header -lt 0) {
+    $found = Find-WslConfigNetworkingMode -Lines ([string[]]$result)
+    if ($found.Header -lt 0) {
         if ($result.Count -gt 0) { $result.Add('') }
         $result.Add('[wsl2]')
         $result.Add('networkingMode=mirrored')
+    } elseif ($found.Key -ge 0) {
+        if ($found.Value -ieq 'mirrored') { return $false }
+        $result[$found.Key] = 'networkingMode=mirrored'
     } else {
-        $end = $result.Count
-        for ($i = $header + 1; $i -lt $result.Count; $i++) {
-            if ($result[$i] -match '^\s*\[') { $end = $i; break }
-        }
-        $key = -1
-        for ($i = $header + 1; $i -lt $end; $i++) {
-            if ($result[$i] -imatch '^\s*networkingMode\s*=\s*(.*?)\s*$') { $key = $i; break }
-        }
-        if ($key -ge 0) {
-            if ($Matches[1] -ieq 'mirrored') { return $false }
-            $result[$key] = 'networkingMode=mirrored'
-        } else {
-            $result.Insert($header + 1, 'networkingMode=mirrored')
-        }
+        $result.Insert($found.Header + 1, 'networkingMode=mirrored')
     }
     [IO.File]::WriteAllLines($Path, [string[]]$result)
     $true
