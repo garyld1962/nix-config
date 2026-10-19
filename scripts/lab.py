@@ -19,7 +19,7 @@ def wsl(*args, data=None, capture=False):
 
 
 def guard():
-    wsl("grep", "-Fxq", "Ubuntu-Nix-Test blank baseline v1", "/etc/nix-lab-baseline")
+    wsl("grep", "-Fxq", "Ubuntu-Nix-Test blank baseline v2", "/etc/nix-lab-baseline")
 
 
 def sync():
