@@ -1,98 +1,150 @@
-# Reproducible WSL configuration
+# Shared development environment for Ubuntu WSL
 
-Nix and Home Manager manage the first set of shell and development tools in `Ubuntu-Nix-Test`. Your working `Ubuntu` remains the default WSL distribution. Nix replaces NVM only in the test instance.
+Create an Ubuntu WSL distribution, install Git, clone this repository, and run one bootstrap script. The script installs Nix and applies the shared development tools and shell configuration for your own account. Ubuntu remains the operating system; this does not install NixOS.
 
-## Try the environment
+Personal identities, authentication, 1Password, and API keys belong in a separate private installer. The shared environment works without them.
 
-Open it from Windows PowerShell:
+## Install
+
+From a normal (not elevated) PowerShell window on Windows 11 22H2 or newer:
 
 ```powershell
-wsl -d Ubuntu-Nix-Test --cd '~'
+irm https://raw.githubusercontent.com/garyld1962/nix-config/main/dev-setup.ps1 | iex
 ```
 
-You will enter Zsh as `gary`, with your Starship prompt and portable shell helpers. The first configuration includes:
+The script:
 
-- Git, direnv with nix-direnv, ripgrep, fd, fzf, bat, jq, tmux, just, curl, wget, and common archive tools.
+- prompts for your Linux username and password, then shows a summary and asks for confirmation before changing anything;
+- installs or updates WSL 2 and enables mirrored networking in `.wslconfig` (if WSL was missing, it asks you to reboot and rerun);
+- imports Ubuntu 26.04.1 LTS from a checksum-verified image into `%LOCALAPPDATA%\WSL\Ubuntu`;
+- clones this repository inside the new distribution and runs `bootstrap.sh` as your user.
+
+Rerunning the same command after a failure resumes without creating a second distribution. The one-line install needs the repository to be public. From a clone, `dev-setup.ps1 -Distro <name> -Branch <branch>` installs under another name or from a branch, `dev-check.ps1 -Distro <name>` validates the result (Windows side, inside the distribution, then the shared checks), and `dev-reset.ps1 -Distro <name>` removes a distribution that dev-setup created.
+
+### Already have a distribution?
+
+Ubuntu 26.04 is the tested base. This environment supports x86-64 Ubuntu WSL with systemd and an account that can use `sudo`. Inside Ubuntu:
+
+```bash
+sudo apt-get update
+sudo apt-get install -y git
+git clone https://github.com/garyld1962/nix-config.git
+cd nix-config
+bash bootstrap.sh
+```
+
+The bootstrap ensures curl, Git, Python, xz, and CA certificates are available. It installs Nix 2.35.2 using a checksum-verified installer when Nix is absent. It preserves an existing usable Nix installation, enables the Nix daemon, builds the shared profile using the checked-in lock file, and activates Home Manager.
+
+The script detects your username and home directory. Run it as your normal account, not with `sudo bash`. It changes your login shell to the managed Zsh. To retain your current login shell:
+
+```bash
+bash bootstrap.sh --no-change-shell
+```
+
+If systemd is disabled, add this section to `/etc/wsl.conf` without removing existing settings, then run `wsl --shutdown` from Windows and reopen Ubuntu:
+
+```ini
+[boot]
+systemd=true
+```
+
+Open a new terminal after installation.
+
+## Shared tools and defaults
+
+The current shared profile contains the tools already verified in the original lab. [The tool list](docs/shared-environment.md) is the starting point for reviewing the opinionated environment.
+
+- Git, GitHub CLI and gh-axi, direnv with nix-direnv, common command-line and archive tools.
 - Node 22, pnpm 10, Python 3.12, and uv.
-- Shared shell history, completion preferences, WezTerm directory reporting, and helpers such as `ff`, `diskpig`, `jqp`, `serve`, and `extract`.
-- Herdr 0.7.5, matching the official binary in your working Ubuntu, with Zsh as its shell and your terminal theme settings.
-- The full `savviety-skills/bin/install-agentic-tools` toolset: ripgrep, fd, jq, rsync, shellcheck, ast-grep, sd, gh, gh-axi, just, hyperfine, xh, and defuddle.
+- Zsh, Starship, completion, shared history, and portable shell helpers.
+- Herdr 0.7.5 with Zsh and the terminal theme.
+- Agent utilities for code search, replacement, copying, shell analysis, timing, HTTP requests, and HTML parsing.
 
-The tested versions are Node 22.23.2, pnpm 10.34.0, Python 3.12.14, and uv 0.11.21. [flake.lock](flake.lock) pins the exact Nixpkgs and Home Manager revisions and content hashes. The bootstrap separately pins and verifies the Nix 2.35.2 installer, whose installer verifies its binary archive.
+[flake.lock](flake.lock) pins Nixpkgs and Home Manager. The gh-axi package also has a locked npm dependency tree. Package installation happens in Nix builds; activation does not run global npm installs.
 
-The [verification results](assessment/first-pass-verification.md) cover a full reset and rebuild, repeated application, and a restart. The rebuild produced the same activation store path with an unchanged lock file.
+Python environments use the configured interpreter. Automatic Python downloads through uv are disabled with `UV_PYTHON_DOWNLOADS=never`.
 
-## Change and apply the configuration
+## Apply changes and check the environment
 
-Edit the source files in your working Ubuntu at `/home/gary/repos/nix-config`. The copy inside the test instance is disposable.
+Keep the clone at its installed location. The generated user profile refers to that local source. After reviewing and pulling changes, run:
+
+```bash
+bash scripts/apply-shared.sh
+bash scripts/check-shared.sh
+```
+
+The generated profile lives in `~/.config/shared-dev` (or under `XDG_CONFIG_HOME` when set). It contains your username, home directory, local source reference, and its lock file. It is generated automatically and contains no credentials. The script refuses to overwrite a manually maintained profile at that location.
+
+Applying updates refreshes the local source input while retaining the versions pinned by the shared repository. Existing stock dotfiles that conflict with Home Manager are backed up with a `.before-shared-dev` suffix. If such a backup already exists, resolve the collision rather than overwriting it.
+
+The checks use a clean Zsh environment, verify that shared commands resolve into the Nix store, and exercise Node/pnpm, Python/uv, direnv, shell helpers, and the agent utilities. A temporary Herdr session runs Zsh and Node in a real pane and stops only its own server. Checks create temporary projects; they do not reset your WSL distribution.
+
+For the example project environment:
+
+```bash
+nix develop path:.
+```
+
+## Personal setup
+
+Run your private installer separately after the shared bootstrap. [The personal setup contract](docs/personal-setup.md) describes the files it can manage and how to extend the shared Home Manager module.
+
+The shared Git configuration includes the optional `~/.config/git/personal.inc` file. Zsh loads the optional `~/.config/zsh/local.zsh` file. Reapplying the shared configuration does not manage or replace either file.
+
+Authentication and secret values stay outside Nix configuration and the Nix store. The bootstrap does not read a personal vault or copy credentials from another account.
+
+Docker, GPU support, AI coding assistants, browser automation, repositories, and application data are not yet part of this shared profile. We will review these additions separately.
+
+## Maintain the shared configuration
 
 | File | Purpose |
 | --- | --- |
-| [home/default.nix](home/default.nix) | Packages, shell integration, and user settings |
-| [home/agentic-tools.nix](home/agentic-tools.nix) | The agentic tools package set |
-| [packages/gh-axi/default.nix](packages/gh-axi/default.nix) | Custom package for gh-axi 0.1.35; adjacent npm lock file pins its dependencies |
-| [packages/herdr/default.nix](packages/herdr/default.nix) | Herdr 0.7.5 official Linux binary, pinned by checksum |
-| [home/herdr.toml](home/herdr.toml) | Herdr settings managed by Home Manager |
-| [home/shell.zsh](home/shell.zsh) | Portable shell preferences and helpers |
-| [home/starship.toml](home/starship.toml) | Prompt appearance |
-| [flake.nix](flake.nix) | Inputs, Home Manager configuration, and a project development shell |
-| [flake.lock](flake.lock) | Exact dependency revisions used for builds |
+| [dev-setup.ps1](dev-setup.ps1) | Windows entry point: WSL prerequisites, Ubuntu import, user, bootstrap |
+| [dev-reset.ps1](dev-reset.ps1) | Removes a distribution that dev-setup created |
+| [dev-check.ps1](dev-check.ps1) | Validates a distribution that dev-setup created |
+| [scripts/wsl-common.ps1](scripts/wsl-common.ps1) | PowerShell functions shared by dev-setup, dev-reset, and the lab |
+| [bootstrap.sh](bootstrap.sh) | Master installer for a developer's Ubuntu WSL account |
+| [scripts/install-nix.sh](scripts/install-nix.sh) | Ubuntu prerequisites and pinned Nix bootstrap |
+| [scripts/apply-shared.sh](scripts/apply-shared.sh) | Generate, build, and activate the current user's profile |
+| [home/default.nix](home/default.nix) | Shared packages and shell configuration |
+| [home/agentic-tools.nix](home/agentic-tools.nix) | Shared agent utilities |
+| [home/shell.zsh](home/shell.zsh) | Shell preferences and helpers |
+| [home/starship.toml](home/starship.toml) | Shared prompt |
+| [home/herdr.toml](home/herdr.toml) | Shared Herdr settings |
+| [packages](packages) | Custom pinned gh-axi and Herdr packages |
+| [flake.nix](flake.nix) | Shared module, configuration factory, and project shell |
 
-From the source folder in your working Ubuntu:
+Run local checks before delivery:
+
+```bash
+shellcheck bootstrap.sh scripts/*.sh
+zsh -n home/shell.zsh scripts/check-session.zsh
+python3 -m py_compile scripts/*.py
+python3 -m unittest discover -s tests -v
+powershell.exe -NoProfile -ExecutionPolicy Bypass -Command "Set-Location $env:TEMP; Invoke-ScriptAnalyzer -Path '$(wslpath -w .)' -Recurse -Severity Warning,Error"
+powershell.exe -NoProfile -ExecutionPolicy Bypass -Command "Set-Location $env:TEMP; Import-Module Pester -MinimumVersion 5.0; Invoke-Pester -Path '$(wslpath -w tests)'"
+```
+
+## Disposable verification lab
+
+The original `Ubuntu-Nix-Test` lab remains separate from the developer installer. Its fixed `gary` account, identifying marker, and saved baseline are test fixtures. The lab calls the same shared installation code.
+
+From the source repository in the working Ubuntu:
 
 ```bash
 python3 scripts/lab.py apply
 python3 scripts/lab.py test
-```
-
-The first command copies the configuration to the test instance and activates it. The second checks a clean Zsh login, Nix-managed command paths, shell helpers, direnv, a Node project run through pnpm, a Python environment created by uv, and the project development shell. The scripts refuse to run against any distribution other than the marked `Ubuntu-Nix-Test` instance.
-
-Agentic tool checks also cover CLI startup, code search, text replacement, file copying, shell analysis, timing, and local HTML parsing. All 13 tools are installed through Nix. `gh-axi` uses a custom package with a locked npm dependency tree and a verified dependency-cache hash; no global npm installation runs during activation. GitHub authentication and optional hooks are separate from installing the tools.
-
-The [agentic tools verification](assessment/agentic-tools-verification.md) includes a fresh reset and rebuild, repeated activation, and a successful `--check` run of the original installer.
-
-Home Manager puts `~/.local/bin` on PATH even before that directory exists, so uv's tool-directory check succeeds on a fresh setup. Tools installed there manually remain outside the Nix configuration.
-
-Run `herdr` inside `Ubuntu-Nix-Test` to open the terminal workspace manager. Its settings come from `home/herdr.toml`; edit that source file and apply the configuration to change them. Keep Herdr updates in the Nix package definition rather than running its self-updater, as described in the [Herdr installation documentation](https://herdr.dev/docs/install/). Existing session state, logs, plugins, and agent credentials are not copied from your working Ubuntu.
-
-The smoke tests start a temporary named Herdr session with isolated settings, run Zsh and Node in a real pane, and stop only that temporary session afterward.
-
-Open a fresh terminal after applying shell changes. Inside the test copy, `nix develop path:.` opens the example project environment using the same pinned runtimes. Individual projects can later define their own development environments.
-
-Python environments use the configured interpreter. Automatic Python downloads through uv are disabled with `UV_PYTHON_DOWNLOADS=never`; additional Python versions should be declared in Nix or deliberately enabled for a particular project.
-
-## Rebuild from the blank baseline
-
-From the source folder in your working Ubuntu:
-
-```bash
 python3 scripts/lab.py rebuild
 ```
 
-This deletes the test instance's current filesystem, restores the saved Ubuntu baseline, installs Nix, applies the existing lock file, and runs the checks. Keep work you want to retain outside the test instance. The source configuration stays in your working Ubuntu throughout.
+`rebuild` deletes the marked test distribution, restores its checksum-verified blank baseline, installs Nix, applies the shared profile, and runs the checks. Keep anything you want to retain outside that distribution. These reset commands are not part of the training installation and refuse to operate on other distributions.
 
-The baseline is `C:\Users\sql_1\WSL\nix-lab\ubuntu-24.04-blank.tar`. It contains Ubuntu 24.04.5, the `gary` account with passwordless sudo, systemd, and an identifying marker. It contains no Nix installation. A checksum is checked before reset. The same Windows directory stores the original Canonical image and its provenance.
+The baseline lives under the current Windows user's `WSL\nix-lab` directory. A baseline restores the saved Ubuntu image; it does not fetch a newer release. WSL can access Windows files, so the disposable distro is not a security sandbox.
 
-To restore only that blank baseline, run this in Windows PowerShell:
-
-```powershell
-powershell.exe -NoProfile -ExecutionPolicy Bypass -File '\\wsl.localhost\Ubuntu\home\gary\repos\nix-config\scripts\wsl-lab.ps1' -Action Reset
-```
-
-After a blank reset, `python3 scripts/lab.py bootstrap` installs Nix without applying Home Manager. The `lock` action creates a missing lock file; it does not deliberately update existing pins. Dependency updates are a separate change and should be reviewed and tested.
-
-A reset restores the saved image, not a newly downloaded Ubuntu release. Bootstrap and package installation require network access. This is a disposable Linux filesystem, not a security sandbox: it can still access Windows files.
-
-## Migration boundaries
-
-Docker, GPU support, AI coding assistants, browser automation, credentials, Git identity, repositories, and application data are outside this first pass. Docker helpers and archive formats requiring 7-Zip or unrar were omitted. Optional personal shell settings can live in `~/.config/zsh/local.zsh`; that file is not managed or restored by this configuration.
-
-Home Manager backs up the stock Ubuntu `.profile` and `.bashrc` with a `.before-nix` suffix on first activation. Ubuntu still owns the base operating system and system services. This configuration currently targets the `gary` account on x86-64 Ubuntu WSL; it is not yet a general installer for other users or machines.
-
-The [initial inventory](assessment/inventory.json) records migration candidates without credentials.
+The [shared bootstrap verification](assessment/shared-dev-verification.md) covers a fresh developer account, personal-file preservation, and a blank-baseline rebuild. Historical verification and the original machine inventory remain under [assessment](assessment). They describe the original lab and should not be treated as a developer's personal configuration or copied into their private setup.
 
 ## References
 
-- [Nix installation on WSL2](https://nixos.org/download/)
+- [Nix installation](https://nix.dev/manual/nix/2.35/installation/installing-binary)
 - [Home Manager](https://github.com/nix-community/home-manager)
-- [Microsoft WSL import, export, and unregister commands](https://learn.microsoft.com/en-us/windows/wsl/basic-commands)
+- [WSL installation](https://learn.microsoft.com/en-us/windows/wsl/install)

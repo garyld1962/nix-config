@@ -9,13 +9,14 @@ done
 [[ $(node --version) == v22.* ]]
 [[ $(pnpm --version) == 10.* ]]
 [[ $(python3 --version) == 'Python 3.12.'* ]]
-[[ ! -d "$HOME/.nvm" ]]
 (( ! $+functions[nvm] ))
 [[ $HISTSIZE == 50000 && $SAVEHIST == 50000 ]]
 [[ -o sharehistory && -o histignorespace && -o autocd ]]
 (( $+functions[compdef] && $+functions[_direnv_hook] ))
-[[ $(getent passwd gary | cut -d: -f7) == /home/gary/.nix-profile/bin/zsh ]]
-nix flake metadata --no-update-lock-file "path:$HOME/nix-config" --json | jq -e '.locks.nodes.nixpkgs.locked.rev' >/dev/null
+[[ $HISTFILE == "$HOME/.zsh_history" ]]
+[[ $ZSH_NAME == zsh ]]
+nix flake metadata --no-update-lock-file "$CONFIG_ROOT" --json | jq -e '.locks.nodes.nixpkgs.locked.rev' >/dev/null
+[[ $(git config --global --get-all include.path) == "$HOME/.config/git/personal.inc" ]]
 
 work=$(mktemp -d)
 trap 'rm -rf -- "$work"' EXIT

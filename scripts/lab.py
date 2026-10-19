@@ -24,7 +24,7 @@ def guard():
 
 def sync():
     guard()
-    files = [ROOT / "flake.nix"]
+    files = [ROOT / "flake.nix", ROOT / "bootstrap.sh"]
     if (ROOT / "flake.lock").exists():
         files.append(ROOT / "flake.lock")
     files += sorted((ROOT / "home").rglob("*"))
@@ -32,7 +32,7 @@ def sync():
                     if "node_modules" not in path.parts)
     files += sorted((ROOT / "scripts").glob("*.sh"))
     files += sorted((ROOT / "scripts").glob("*.zsh"))
-    files += sorted((ROOT / "scripts").glob("check-*.py"))
+    files += sorted((ROOT / "scripts").glob("*.py"))
     archive = io.BytesIO()
     with tarfile.open(fileobj=archive, mode="w") as tar:
         for path in files:
@@ -49,7 +49,7 @@ def script(name):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("action", choices=["sync", "bootstrap", "lock", "apply", "test", "rebuild"])
+    parser.add_argument("action", choices=["sync", "bootstrap", "install", "lock", "apply", "test", "rebuild"])
     args = parser.parse_args()
     if args.action == "rebuild":
         if not (ROOT / "flake.lock").is_file():
@@ -60,12 +60,15 @@ def main():
         subprocess.run(["powershell.exe", "-NoProfile", "-ExecutionPolicy", "Bypass",
                         "-File", windows_script, "-Action", "Reset"], check=True)
     sync()
-    if args.action in ("bootstrap", "rebuild"):
+    if args.action == "bootstrap":
         script("bootstrap")
+    if args.action in ("install", "rebuild"):
+        guard()
+        wsl("bash", f"{DEST}/bootstrap.sh")
     if args.action == "lock":
         script("lock")
         (ROOT / "flake.lock").write_bytes(wsl("cat", f"{DEST}/flake.lock", capture=True))
-    if args.action in ("apply", "rebuild"):
+    if args.action == "apply":
         script("apply")
     if args.action in ("test", "rebuild"):
         script("smoke-test")

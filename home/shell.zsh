@@ -185,7 +185,8 @@ serve() {
 
 wttr() {
   emulate -L zsh
-  command curl -s "wttr.in/${1:-Boone+NC}?format=3"
+  [[ -n ${1:-} ]] || { print -u2 'Usage: wttr <place>'; return 64; }
+  command curl -s "https://wttr.in/${1}?format=3"
 }
 
 helpers() {
@@ -199,7 +200,7 @@ Custom helpers:
   jqp [file]               Pretty-print JSON
   up <url>                 HTTP status and timing
   serve [port]             Serve the current directory
-  wttr [place]             Compact weather
+  wttr <place>             Compact weather
 EOF
 }
 

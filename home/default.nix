@@ -1,8 +1,6 @@
-{ pkgs, ... }:
+{ config, lib, pkgs, ... }:
 {
   imports = [ ./agentic-tools.nix ];
-  home.username = "gary";
-  home.homeDirectory = "/home/gary";
   home.stateVersion = "26.05";
   targets.genericLinux.enable = true;
   targets.genericLinux.gpu.enable = false;
@@ -23,6 +21,9 @@
   };
   home.sessionPath = [ "$HOME/.local/bin" ];
   programs.git.enable = true;
+  # A private installer may write identity and preferences here.
+  # This file is optional and is never read into the Nix store.
+  programs.git.includes = [ { path = "${config.xdg.configHome}/git/personal.inc"; } ];
   programs.bash.enable = true;
   programs.direnv = {
     enable = true;
@@ -38,13 +39,16 @@
   };
   programs.zsh = {
     enable = true;
-    dotDir = "/home/gary";
+    dotDir = lib.mkDefault config.home.homeDirectory;
     enableCompletion = true;
+    # A multi-user Nix installation may have completion paths owned by its
+    # original installer. Skip untrusted paths instead of prompting at startup.
+    completionInit = "autoload -U compinit && compinit -i";
     defaultKeymap = "emacs";
     history = {
       size = 50000;
       save = 50000;
-      path = "/home/gary/.zsh_history";
+      path = "${config.home.homeDirectory}/.zsh_history";
       extended = true;
       share = true;
       ignoreDups = true;

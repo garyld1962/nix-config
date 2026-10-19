@@ -10,8 +10,8 @@ import uuid
 
 
 def main():
-    if os.environ.get("WSL_DISTRO_NAME") != "Ubuntu-Nix-Test":
-        raise SystemExit("This check only operates inside Ubuntu-Nix-Test.")
+    if not os.environ.get("WSL_DISTRO_NAME"):
+        raise SystemExit("This check only operates inside WSL.")
     session = "nix-smoke-" + uuid.uuid4().hex[:8]
     env = {key: value for key, value in os.environ.items() if not key.startswith("HERDR_")}
     with tempfile.TemporaryDirectory(prefix="hdr-") as temporary:

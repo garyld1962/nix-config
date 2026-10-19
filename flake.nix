@@ -1,5 +1,5 @@
 {
-  description = "Gary's Ubuntu WSL shell and development tools";
+  description = "Shared Ubuntu WSL shell and development tools";
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-26.05";
@@ -18,10 +18,15 @@
         gh-axi = pkgs.callPackage ./packages/gh-axi { };
         herdr = pkgs.callPackage ./packages/herdr { };
       };
-      homeConfigurations.gary = home-manager.lib.homeManagerConfiguration {
-        inherit pkgs;
-        modules = [ ./home/default.nix ];
-      };
+      homeModules.default = ./home/default.nix;
+      lib.mkHomeConfiguration = { username, homeDirectory, extraModules ? [ ] }:
+        home-manager.lib.homeManagerConfiguration {
+          inherit pkgs;
+          modules = [
+            ./home/default.nix
+            { home = { inherit username homeDirectory; }; }
+          ] ++ extraModules;
+        };
       devShells.${system}.default = pkgs.mkShell {
         packages = with pkgs; [ nodejs_22 pnpm_10 python312 uv ];
       };

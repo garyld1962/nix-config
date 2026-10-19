@@ -1,0 +1,20 @@
+{
+  "activation_before": "/nix/store/bx648kphgw4qznqwvg3r0z48ikcxjwq2-home-manager-generation",
+  "flake_lock_sha256": "2cf2f34a2e092c81c363207b647b137904bafdd6dab7446cb316cfbdf585f512",
+  "npm_lock_sha256": "a0f807a9f56ab26dd48bce905ec63dd772a9e77f33db030477fbced9f373c12b",
+  "reset_activation_after": "/nix/store/bx648kphgw4qznqwvg3r0z48ikcxjwq2-home-manager-generation",
+  "fresh_rebuild_passed": true,
+  "verified_on": "2026-10-01",
+  "trainee_account": "nix-trainee",
+  "trainee_source_path": "/home/nix-trainee/shared dev",
+  "trainee_bootstrap_and_smoke_passed": true,
+  "personal_git_and_shell_preserved": true,
+  "no_change_shell_preserved_bash": true,
+  "final_activation": "/nix/store/hmpy6fnyzff7dzai7ly43yiv7xr7fyx7-home-manager-generation",
+  "final_repeat_activation": "/nix/store/hmpy6fnyzff7dzai7ly43yiv7xr7fyx7-home-manager-generation",
+  "final_smoke_passed": true,
+  "unit_tests_passed": 7,
+  "root_invocation_rejected": true,
+  "non_wsl_invocation_rejected": true,
+  "reset_scope_note": "Reset comparison preceded removal of one duplicate weather-helper help line. Final source was subsequently applied twice and smoke-tested."
+}
