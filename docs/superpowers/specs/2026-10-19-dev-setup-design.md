@@ -77,7 +77,7 @@ Reuses the lab's download code via `wsl-common.ps1`:
 
 1. Image cache directory `%LOCALAPPDATA%\WSL\images`. Download `SHA256SUMS` from `https://releases.ubuntu.com/26.04.1/`, extract the single entry for `ubuntu-26.04.1-wsl-amd64.wsl`, download the image to `.partial` if not cached, verify SHA256, rename.
 2. `wsl --import <Distro> %LOCALAPPDATA%\WSL\<Distro> <image> --version 2`.
-3. As root over stdin (`wsl -d <Distro> -u root --cd / --exec bash -s`), with the password as the first line of stdin and the script reading it with `IFS= read -r`:
+3. As root over stdin (`wsl -d <Distro> -u root --cd / --exec bash -s`). `bash -s` executes the first stdin line as script, so the payload is an `IFS= read -r` line, then the password (base64 of its UTF-8 bytes, so the console encoding cannot alter it, decoded by `base64 -d` inside bash), then the script. Commands in the script run under `{ ... } </dev/null` so none can read the rest of the script from stdin:
    - `useradd --create-home --shell /bin/bash --groups sudo <user>` if absent.
    - `chpasswd` from the read value.
    - `/etc/sudoers.d/<user>-dev-setup` with `NOPASSWD:ALL`, mode 440, checked by `visudo -cf`.
@@ -150,7 +150,7 @@ Functions, each with one purpose:
 - `$ErrorActionPreference = 'Stop'` everywhere; every `wsl.exe` call checks `$LASTEXITCODE`.
 - Downloads go to `.partial` and are renamed only after checksum success.
 - Any failure after import leaves the distro registered with its marker so a rerun resumes; `dev-reset.ps1` is the way to start over.
-- Password handling: the plaintext string exists only between the confirmation and the end of Stage 3, and is overwritten before the script continues.
+- Password handling: the plaintext string exists only between the confirmation and the end of Stage 3; the variable is dropped in a `finally` block so it does not survive a failure or an `iex` session. A failure during Stage 3 unregisters the distribution this run imported, so a rerun starts clean.
 
 ## Testing
 
