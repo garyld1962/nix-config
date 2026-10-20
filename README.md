@@ -19,7 +19,7 @@ The script:
 - imports Ubuntu 26.04.1 LTS from a checksum-verified image into `%LOCALAPPDATA%\WSL\Ubuntu`;
 - clones this repository inside the new distribution and runs `bootstrap.sh` as your user.
 
-Rerunning the same command after a failure resumes without creating a second distribution. The one-line install needs the repository to be public. From a clone, `dev-setup.ps1 -Distro <name> -Branch <branch>` installs under another name or from a branch, `dev-check.ps1 -Distro <name>` validates the result (Windows side, inside the distribution, then the shared checks), and `dev-reset.ps1 -Distro <name>` removes a distribution that dev-setup created.
+Rerunning the same command after a failure resumes without creating a second distribution. The one-line install needs the repository to be public. From a clone, `dev-setup.ps1 -Distro <name> -Branch <branch>` installs under another name or from a branch, `dev-check.ps1 -Distro <name>` validates the result (Windows side, inside the distribution, then the shared checks), and `dev-reset.ps1 -Distro <name>` removes a distribution that dev-setup created. [The test runbook](docs/dev-setup-testing.md) records how to exercise all three end to end and the results of the last run.
 
 ### Already have a distribution?
 
