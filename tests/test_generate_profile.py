@@ -55,6 +55,19 @@ class ProfileTests(unittest.TestCase):
         profile.generate(self.root, self.destination, "alice", "/home/alice")
         self.assertEqual(previous, target.stat().st_mtime_ns)
 
+    def test_optional_modules_are_passed_as_extra_modules(self):
+        target = profile.generate(self.root, self.destination, "alice", "/home/alice")
+        self.assertIn("extraModules = [  ];", target.read_text())
+        target = profile.generate(self.root, self.destination, "alice", "/home/alice",
+                                  ["toolchains", "toolchains"])
+        self.assertIn("extraModules = [ shared-dev.homeModules.toolchains ];", target.read_text())
+
+    def test_module_names_are_validated(self):
+        for name in ["../evil", "tool chains", "Toolchains", ""]:
+            with self.assertRaisesRegex(ValueError, "module name"):
+                profile.generate(self.root, self.destination, "alice", "/home/alice", [name])
+        self.assertFalse(self.destination.exists())
+
 
 if __name__ == "__main__":
     unittest.main()

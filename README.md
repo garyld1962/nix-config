@@ -60,6 +60,8 @@ The current shared profile contains the tools already verified in the original l
 - Herdr 0.7.5 with Zsh and the terminal theme.
 - Agent utilities for code search, replacement, copying, shell analysis, timing, HTTP requests, and HTML parsing.
 
+Optional modules extend the profile per account. `toolchains` adds Go, .NET SDK 10, rustup with a gcc linker, and TypeScript. List the module name in `~/.config/shared-dev/modules` (one per line) and reapply; `post-install.sh` does this.
+
 [flake.lock](flake.lock) pins Nixpkgs and Home Manager. The gh-axi package also has a locked npm dependency tree. Package installation happens in Nix builds; activation does not run global npm installs.
 
 Python environments use the configured interpreter. Automatic Python downloads through uv are disabled with `UV_PYTHON_DOWNLOADS=never`.
@@ -89,6 +91,14 @@ nix develop path:.
 
 Run your private installer separately after the shared bootstrap. [The personal setup contract](docs/personal-setup.md) describes the files it can manage and how to extend the shared Home Manager module.
 
+[post-install.sh](post-install.sh) is the personal installer for this repository. Run it once after the bootstrap, as your own user, from the clone:
+
+```bash
+bash post-install.sh
+```
+
+It prompts for your Git name and email, signs you in to GitHub with `gh`, enables the optional `toolchains` module (Go, the .NET SDK, Rust, TypeScript) in your profile and reapplies it, and installs Claude Code, Codex, and Copilot CLI into `~/.local`. VS Code stays on Windows; the script adds the Remote - WSL extension so `code .` opens this distribution. Rerunning it updates the tools and keeps your answers as defaults.
+
 The shared Git configuration includes the optional `~/.config/git/personal.inc` file. Zsh loads the optional `~/.config/zsh/local.zsh` file. Reapplying the shared configuration does not manage or replace either file.
 
 Authentication and secret values stay outside Nix configuration and the Nix store. The bootstrap does not read a personal vault or copy credentials from another account.
@@ -104,10 +114,12 @@ Docker, GPU support, AI coding assistants, browser automation, repositories, and
 | [dev-check.ps1](dev-check.ps1) | Validates a distribution that dev-setup created |
 | [scripts/wsl-common.ps1](scripts/wsl-common.ps1) | PowerShell functions shared by dev-setup, dev-reset, and the lab |
 | [bootstrap.sh](bootstrap.sh) | Master installer for a developer's Ubuntu WSL account |
+| [post-install.sh](post-install.sh) | Personal installer: identity, GitHub sign-in, extra toolchains |
 | [scripts/install-nix.sh](scripts/install-nix.sh) | Ubuntu prerequisites and pinned Nix bootstrap |
 | [scripts/apply-shared.sh](scripts/apply-shared.sh) | Generate, build, and activate the current user's profile |
 | [home/default.nix](home/default.nix) | Shared packages and shell configuration |
 | [home/agentic-tools.nix](home/agentic-tools.nix) | Shared agent utilities |
+| [home/toolchains.nix](home/toolchains.nix) | Optional module: Go, .NET SDK, rustup, gcc, TypeScript |
 | [home/shell.zsh](home/shell.zsh) | Shell preferences and helpers |
 | [home/starship.toml](home/starship.toml) | Shared prompt |
 | [home/herdr.toml](home/herdr.toml) | Shared Herdr settings |
@@ -117,7 +129,7 @@ Docker, GPU support, AI coding assistants, browser automation, repositories, and
 Run local checks before delivery:
 
 ```bash
-shellcheck bootstrap.sh scripts/*.sh
+shellcheck bootstrap.sh post-install.sh scripts/*.sh
 zsh -n home/shell.zsh scripts/check-session.zsh
 python3 -m py_compile scripts/*.py
 python3 -m unittest discover -s tests -v

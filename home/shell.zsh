@@ -2,6 +2,12 @@
 # Home Manager supplies completion, history, direnv, fzf, and the Starship prompt.
 typeset -U path PATH
 
+# Windows Terminal and wsl.exe start in the Windows profile or System32.
+# Move to the Linux home in that case; any other start directory is kept.
+if [[ $PWD =~ ^/mnt/c/[Uu]sers/[^/]+$ || ${PWD:l} == /mnt/c/windows/system32 ]]; then
+  cd ~
+fi
+
 setopt EXTENDED_HISTORY
 setopt HIST_EXPIRE_DUPS_FIRST
 setopt HIST_FIND_NO_DUPS

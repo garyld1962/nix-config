@@ -19,6 +19,7 @@
         herdr = pkgs.callPackage ./packages/herdr { };
       };
       homeModules.default = ./home/default.nix;
+      homeModules.toolchains = ./home/toolchains.nix;
       lib.mkHomeConfiguration = { username, homeDirectory, extraModules ? [ ] }:
         home-manager.lib.homeManagerConfiguration {
           inherit pkgs;

@@ -2,6 +2,8 @@
 
 A developer first runs the shared bootstrap. A separate private installer can then add identities, authentication, secret access, and personal preferences. The shared bootstrap never runs the private installer.
 
+`post-install.sh` in the repository root is that installer for this team. It writes the Git identity file below, `~/.npmrc`, and the modules list described under optional shared modules; it installs the AI command-line tools under `~/.local`. It never stores secrets; `gh auth login` keeps its token in the GitHub CLI's own store.
+
 ## Git identity and preferences
 
 The managed Git configuration includes `$HOME/.config/git/personal.inc`. This file is optional and is not managed by Home Manager. A private installer can create its directory and write settings with Git:
@@ -19,6 +21,16 @@ Keep tokens and credentials in the appropriate credential provider. The identity
 Zsh loads `$HOME/.config/zsh/local.zsh` when it exists. A private installer can use it for personal aliases, environment preferences, and integration with a secret loader. Reapplying the shared configuration leaves it in place.
 
 Do not put plaintext secrets in shell configuration. Load them through the developer's own secret provider at runtime. 1Password access, vault names, and personal identities belong in the private installer rather than the shared environment.
+
+## Optional shared modules
+
+The shared flake exports optional Home Manager modules as `homeModules.<name>`. An account enables them without a private flake by listing names, one per line, in `~/.config/shared-dev/modules` (or under `XDG_CONFIG_HOME`), then running `bash scripts/apply-shared.sh`. The list is read on every apply, so the choice persists across shared updates. Blank lines and `#` comments are ignored.
+
+| Module | Adds |
+| --- | --- |
+| `toolchains` | Go, .NET SDK 10, rustup with a gcc linker, TypeScript; `~/go/bin`, `~/.cargo/bin`, and `~/.dotnet/tools` on PATH |
+
+rustup from the module manages Rust toolchains under `~/.rustup` as usual; run `rustup default stable` once (post-install.sh does this).
 
 ## Additional packages and Home Manager settings
 

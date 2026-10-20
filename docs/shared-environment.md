@@ -20,6 +20,12 @@ Shell helpers include directory listing, filename search, disk usage, listening 
 
 The shared profile contains no Git identity, vault reference, account token, personal location, or authentication setup. Optional personal Git and shell files are loaded at runtime.
 
+## Optional modules
+
+| Module | Included | Enable |
+| --- | --- | --- |
+| `toolchains` | Go, .NET SDK 10, rustup, gcc, TypeScript | `~/.config/shared-dev/modules`; see the personal setup contract |
+
 ## Selected additions
 
 These tools are selected for the shared environment but are not yet installed by the shared bootstrap.
@@ -28,4 +34,4 @@ These tools are selected for the shared environment but are not yet installed by
 | --- | --- | --- | --- |
 | HTML documents and review | Lavish Editor (`lavish-axi`) | Open HTML documents for visual review, annotations, and feedback; export standalone HTML files | Nix packaging and shared installation pending |
 
-AI assistants, browser automation, Docker, GPU tooling, and additional language runtimes still need a tool-by-tool review. The original machine inventory records candidates, not a decision to install everything it contains.
+AI assistants, browser automation, Docker, and GPU tooling still need a tool-by-tool review. Claude Code, Codex, and Copilot CLI are installed per account by `post-install.sh` because they update faster than a pinned flake. The original machine inventory records candidates, not a decision to install everything it contains.

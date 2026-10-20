@@ -12,8 +12,17 @@ fi
 command -v nix >/dev/null || { printf '%s\n' 'Run bash bootstrap.sh to install Nix first.' >&2; exit 1; }
 profile_dir=${XDG_CONFIG_HOME:-$DEV_HOME/.config}/shared-dev
 [[ $profile_dir == /* ]] || { printf '%s\n' 'XDG_CONFIG_HOME must be an absolute path.' >&2; exit 1; }
+# Optional shared modules, one name per line in $profile_dir/modules (see docs/personal-setup.md).
+module_args=()
+if [[ -f $profile_dir/modules ]]; then
+  while IFS= read -r line || [[ -n $line ]]; do
+    line=${line%%#*}
+    line=${line//[[:space:]]/}
+    [[ -z $line ]] || module_args+=(--module "$line")
+  done <"$profile_dir/modules"
+fi
 python3 "$CONFIG_ROOT/scripts/generate-profile.py" --root "$CONFIG_ROOT" \
-  --destination "$profile_dir" --username "$DEV_USER" --home "$DEV_HOME"
+  --destination "$profile_dir" --username "$DEV_USER" --home "$DEV_HOME" "${module_args[@]}"
 # Refresh only the local shared source. Its checked-in lock file pins dependencies.
 nix flake update shared-dev --flake "$profile_dir"
 nix build --no-update-lock-file "$profile_dir#homeConfigurations.default.activationPackage" \
