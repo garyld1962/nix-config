@@ -138,7 +138,7 @@ function Get-UbuntuWslImage {
     if ($LASTEXITCODE -ne 0) { throw 'Checksum download failed.' }
     $expected = Get-Sha256SumsEntry -Lines ([IO.File]::ReadAllLines($sums)) -FileName $ImageName
     if (-not (Test-Path -LiteralPath $image)) {
-        Write-Output "Downloading $ImageName to $CacheDir"
+        Write-Host "Downloading $ImageName to $CacheDir"
         & curl.exe --fail --location --retry 3 --output "$image.partial" "$baseUrl/$ImageName"
         if ($LASTEXITCODE -ne 0) { throw 'Image download failed.' }
         if ((Get-FileHash "$image.partial" -Algorithm SHA256).Hash -ne $expected) { throw 'Downloaded image checksum mismatch.' }
@@ -158,7 +158,9 @@ function Invoke-WslBashScript {
     param([Parameter(Mandatory)][string]$Name, [Parameter(Mandatory)][string]$Script, [string]$User, [string]$SecretLine)
     $wslArgs = @('-d', $Name)
     if ($User) { $wslArgs += @('-u', $User, '--cd', '/') } else { $wslArgs += @('--cd', '~') }
-    $wslArgs += @('--exec', 'bash', '-s')
+    # Windows PowerShell prefixes the piped payload with a UTF-8 BOM when the console code page is 65001,
+    # which would break the first line (the secret read, when one is supplied). Strip it before bash reads it.
+    $wslArgs += @('--exec', 'bash', '-c', 'sed ''1s/^\xEF\xBB\xBF//'' | bash -s')
     $payloadArgs = @{ Script = $Script }
     if ($PSBoundParameters.ContainsKey('SecretLine')) { $payloadArgs.SecretLine = $SecretLine }
     Format-WslStdinPayload @payloadArgs | & wsl.exe @wslArgs
