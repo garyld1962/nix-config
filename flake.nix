@@ -17,6 +17,7 @@
       packages.${system} = {
         gh-axi = pkgs.callPackage ./packages/gh-axi { };
         herdr = pkgs.callPackage ./packages/herdr { };
+        wsl-open = pkgs.callPackage ./packages/wsl-open { };
       };
       homeModules.default = ./home/default.nix;
       homeModules.toolchains = ./home/toolchains.nix;

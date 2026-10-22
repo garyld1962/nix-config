@@ -59,6 +59,7 @@ The current shared profile contains the tools already verified in the original l
 - Zsh, Starship, completion, shared history, and portable shell helpers.
 - Herdr 0.7.5 with Zsh and the terminal theme.
 - Agent utilities for code search, replacement, copying, shell analysis, timing, HTTP requests, and HTML parsing.
+- On WSL, a PATH filter that keeps only the VS Code launcher and Docker Desktop CLI from the Windows PATH, and `wsl-open` (also `xdg-open`, `open`, and `BROWSER`) to open URLs and files with the Windows default handler.
 
 Optional modules extend the profile per account. `toolchains` adds Go, .NET SDK 10, rustup with a gcc linker, and TypeScript. List the module name in `~/.config/shared-dev/modules` (one per line) and reapply; `post-install.sh` does this.
 
@@ -68,7 +69,7 @@ Python environments use the configured interpreter. Automatic Python downloads t
 
 ## Apply changes and check the environment
 
-Keep the clone at its installed location. The generated user profile refers to that local source. After reviewing and pulling changes, run:
+Keep the clone at its installed location. The generated user profile refers to that local source. After reviewing and pulling changes, run the apply script rather than `home-manager switch`. A raw switch rebuilds from the copy of this clone pinned in the generated lock file and silently ignores your pull; the script refreshes that input first.
 
 ```bash
 bash scripts/apply-shared.sh
@@ -79,7 +80,7 @@ The generated profile lives in `~/.config/shared-dev` (or under `XDG_CONFIG_HOME
 
 Applying updates refreshes the local source input while retaining the versions pinned by the shared repository. Existing stock dotfiles that conflict with Home Manager are backed up with a `.before-shared-dev` suffix. If such a backup already exists, resolve the collision rather than overwriting it.
 
-The checks use a clean Zsh environment, verify that shared commands resolve into the Nix store, and exercise Node/pnpm, Python/uv, direnv, shell helpers, and the agent utilities. A temporary Herdr session runs Zsh and Node in a real pane and stops only its own server. Checks create temporary projects; they do not reset your WSL distribution.
+The checks use a clean Zsh environment seeded with fake Windows PATH entries, verify that shared commands resolve into the Nix store, that the PATH filter keeps only the intended Windows tools, that `wsl-open` is wired up, and exercise Node/pnpm, Python/uv, direnv, shell helpers, and the agent utilities. A temporary Herdr session runs Zsh and Node in a real pane and stops only its own server. Checks create temporary projects; they do not reset your WSL distribution.
 
 For the example project environment:
 
@@ -103,7 +104,7 @@ The shared Git configuration includes the optional `~/.config/git/personal.inc` 
 
 Authentication and secret values stay outside Nix configuration and the Nix store. The bootstrap does not read a personal vault or copy credentials from another account.
 
-Docker, GPU support, AI coding assistants, browser automation, repositories, and application data are not yet part of this shared profile. We will review these additions separately.
+Docker, GPU support, AI coding assistants, browser automation (beyond opening links with `wsl-open`), repositories, and application data are not yet part of this shared profile. We will review these additions separately.
 
 ## Maintain the shared configuration
 
@@ -123,13 +124,14 @@ Docker, GPU support, AI coding assistants, browser automation, repositories, and
 | [home/shell.zsh](home/shell.zsh) | Shell preferences and helpers |
 | [home/starship.toml](home/starship.toml) | Shared prompt |
 | [home/herdr.toml](home/herdr.toml) | Shared Herdr settings |
-| [packages](packages) | Custom pinned gh-axi and Herdr packages |
+| [packages](packages) | Custom pinned gh-axi and Herdr packages, and the `wsl-open` launcher |
 | [flake.nix](flake.nix) | Shared module, configuration factory, and project shell |
 
 Run local checks before delivery:
 
 ```bash
-shellcheck bootstrap.sh post-install.sh scripts/*.sh
+shellcheck bootstrap.sh post-install.sh scripts/*.sh packages/wsl-open/wsl-open.sh
+nix build --no-link path:.#wsl-open
 zsh -n home/shell.zsh scripts/check-session.zsh
 python3 -m py_compile scripts/*.py
 python3 -m unittest discover -s tests -v

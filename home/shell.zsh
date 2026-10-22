@@ -13,6 +13,8 @@ fi
 if [[ -d /mnt/c ]]; then
   local -a keep_windows_paths=(
     '*/Microsoft VS Code/bin'
+    # Docker Desktop WSL integration is not enabled for the distro; the Windows CLI
+    # is what provides docker. Remove this entry if integration is turned on.
     '*/Docker/Docker/resources/bin'
   )
   local -a filtered_path=()

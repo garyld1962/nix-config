@@ -13,11 +13,14 @@
     nodejs_22 pnpm_10 python312 uv
     unzip zip gnutar gzip bzip2 xz iproute2
     (callPackage ../packages/herdr { })
+    (callPackage ../packages/wsl-open { })
   ];
   xdg.configFile."herdr/config.toml".source = ./herdr.toml;
   home.sessionVariables = {
     # Project Python environments use the configured interpreter unless explicitly overridden.
     UV_PYTHON_DOWNLOADS = "never";
+    # Opens links in the Windows default browser under WSL; xdg-open elsewhere.
+    BROWSER = "wsl-open";
   };
   home.sessionPath = [ "$HOME/.local/bin" ];
   programs.git.enable = true;
