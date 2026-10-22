@@ -8,6 +8,29 @@ if [[ $PWD =~ ^/mnt/c/[Uu]sers/[^/]+$ || ${PWD:l} == /mnt/c/windows/system32 ]];
   cd ~
 fi
 
+# WSL appends the whole Windows PATH. Keep only the Windows tools listed here
+# (matched by glob) and drop every other /mnt/<drive>/ entry.
+if [[ -d /mnt/c ]]; then
+  local -a keep_windows_paths=(
+    '*/Microsoft VS Code/bin'
+    '*/Docker/Docker/resources/bin'
+  )
+  local -a filtered_path=()
+  local p pattern keep
+  for p in "${path[@]}"; do
+    if [[ $p == /mnt/[a-zA-Z]/* ]]; then
+      keep=0
+      for pattern in "${keep_windows_paths[@]}"; do
+        [[ ${p%/} == ${~pattern} ]] && { keep=1; break; }
+      done
+      (( keep )) || continue
+    fi
+    filtered_path+=("$p")
+  done
+  path=("${filtered_path[@]}")
+  unset keep_windows_paths filtered_path p pattern keep
+fi
+
 setopt EXTENDED_HISTORY
 setopt HIST_EXPIRE_DUPS_FIRST
 setopt HIST_FIND_NO_DUPS
@@ -28,32 +51,6 @@ zstyle ':completion:*' matcher-list 'm:{a-zA-Z}={A-Za-z}'
 zstyle ':completion:*' use-cache on
 zstyle ':completion:*' cache-path "${XDG_CACHE_HOME}/zsh/zcompcache"
 bindkey -e
-
-__wezterm_osc7() {
-  [[ -n ${WEZTERM_PANE:-} ]] || return 0
-
-  emulate -L zsh
-  local LC_ALL=C encoded='' char
-  local i
-
-  for (( i = 1; i <= ${#PWD}; i++ )); do
-    char=${PWD[i]}
-    case $char in
-      [[:alnum:]/._~-]) encoded+=$char ;;
-      *)
-        printf -v char '%%%02X' "'$char"
-        encoded+=$char
-        ;;
-    esac
-  done
-
-  printf '\e]7;file://%s%s\e\\' "${HOST:-$HOSTNAME}" "$encoded"
-}
-
-autoload -Uz add-zsh-hook
-add-zsh-hook -d precmd __wezterm_osc7 2>/dev/null
-add-zsh-hook precmd __wezterm_osc7
-
 
 # Small, portable shell helpers.  Each helper avoids framework dependencies and
 # works on both WSL/Linux and macOS where practical.

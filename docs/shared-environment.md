@@ -16,7 +16,7 @@ This is the first shared profile. It carries over the tools from the verified WS
 
 The shared prompt shows the directory, Git state, command duration, and active project runtimes. History holds 50,000 entries and is shared between Zsh sessions. Completion skips directories that Zsh considers insecure, so a second account does not wait at an interactive trust prompt. Herdr uses Zsh and the terminal theme. uv uses the configured Python and does not automatically download other versions.
 
-Shell helpers include directory listing, filename search, disk usage, listening ports, archive extraction, JSON formatting, HTTP checks, a local HTTP server, and weather for an explicitly supplied place. WezTerm directory reporting is enabled when running inside WezTerm.
+Shell helpers include directory listing, filename search, disk usage, listening ports, archive extraction, JSON formatting, HTTP checks, a local HTTP server, and weather for an explicitly supplied place. On WSL the Windows entries that WSL appends to PATH are dropped, except for the VS Code launcher and the Docker Desktop CLI. `wsl-open` (also available as `xdg-open` and `open`, and set as `BROWSER`) opens URLs and files with the Windows default handler.
 
 The shared profile contains no Git identity, vault reference, account token, personal location, or authentication setup. Optional personal Git and shell files are loaded at runtime.
 
