@@ -57,7 +57,7 @@ The current shared profile contains the tools already verified in the original l
 - Git, GitHub CLI and gh-axi, direnv with nix-direnv, common command-line and archive tools.
 - Node 22, pnpm 10, Python 3.12, and uv.
 - Zsh, Starship, completion, shared history, and portable shell helpers.
-- Herdr 0.7.5 with Zsh and the terminal theme.
+- Herdr 0.7.5 with Zsh and the terminal theme, and tuios 0.10.1.
 - SoX with the PulseAudio driver, pointed at the WSLg sound server through `PULSE_SERVER`.
 - Agent utilities for code search, replacement, copying, shell analysis, timing, HTTP requests, and HTML parsing.
 - On WSL, a PATH filter that keeps only the VS Code launcher from the Windows PATH, and `wsl-open` (also `xdg-open`, `open`, and `BROWSER`) to open URLs and files with the Windows default handler.
@@ -125,7 +125,7 @@ Docker beyond the Docker Desktop integration that `post-install.sh` offers, GPU 
 | [home/shell.zsh](home/shell.zsh) | Shell preferences and helpers |
 | [home/starship.toml](home/starship.toml) | Shared prompt |
 | [home/herdr.toml](home/herdr.toml) | Shared Herdr settings |
-| [packages](packages) | Custom pinned gh-axi and Herdr packages, and the `wsl-open` launcher |
+| [packages](packages) | Custom pinned gh-axi, Herdr, and tuios packages, and the `wsl-open` launcher |
 | [flake.nix](flake.nix) | Shared module, configuration factory, and project shell |
 
 Run local checks before delivery:

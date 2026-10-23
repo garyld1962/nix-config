@@ -17,6 +17,7 @@
       packages.${system} = {
         gh-axi = pkgs.callPackage ./packages/gh-axi { };
         herdr = pkgs.callPackage ./packages/herdr { };
+        tuios = pkgs.callPackage ./packages/tuios { };
         wsl-open = pkgs.callPackage ./packages/wsl-open { };
       };
       homeModules.default = ./home/default.nix;
@@ -30,7 +31,7 @@
           ] ++ extraModules;
         };
       devShells.${system}.default = pkgs.mkShell {
-        packages = with pkgs; [ nodejs_22 pnpm_10 python312 uv ];
+        packages = with pkgs; [ nodejs_22 pnpm_10_latest python312 uv ];
       };
     };
 }

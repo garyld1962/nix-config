@@ -10,9 +10,10 @@
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
   home.packages = with pkgs; [
     bat tmux curl wget
-    nodejs_22 pnpm_10 python312 uv
+    nodejs_22 pnpm_10_latest python312 uv
     unzip zip gnutar gzip bzip2 xz iproute2
     (callPackage ../packages/herdr { })
+    (callPackage ../packages/tuios { })
     (callPackage ../packages/wsl-open { })
     # SoX with the PulseAudio driver so `play`/`rec` reach the WSLg sound server.
     (sox.override { enableLibpulseaudio = true; })
