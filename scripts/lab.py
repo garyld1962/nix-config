@@ -3,17 +3,28 @@
 import argparse
 import io
 from pathlib import Path
+import shutil
 import subprocess
 import tarfile
 
 ROOT = Path(__file__).resolve().parent.parent
 DISTRO = "Ubuntu-Nix-Test"
 DEST = "/home/gary/nix-config"
+SYSTEM32 = "/mnt/c/Windows/System32"
+
+
+def windows_exe(name, fallback):
+    """SSH sessions into WSL do not get the Windows PATH appended."""
+    return shutil.which(name) or fallback
+
+
+WSL_EXE = windows_exe("wsl.exe", f"{SYSTEM32}/wsl.exe")
+POWERSHELL_EXE = windows_exe("powershell.exe", f"{SYSTEM32}/WindowsPowerShell/v1.0/powershell.exe")
 
 
 def wsl(*args, data=None, capture=False):
     return subprocess.run(
-        ["wsl.exe", "-d", DISTRO, "-u", "gary", "--cd", "/home/gary", "--exec", *args],
+        [WSL_EXE, "-d", DISTRO, "-u", "gary", "--cd", "/home/gary", "--exec", *args],
         input=data, stdout=subprocess.PIPE if capture else None, check=True,
     ).stdout
 
@@ -57,7 +68,7 @@ def main():
         windows_script = subprocess.check_output(
             ["wslpath", "-w", str(ROOT / "scripts/wsl-lab.ps1")], text=True
         ).strip()
-        subprocess.run(["powershell.exe", "-NoProfile", "-ExecutionPolicy", "Bypass",
+        subprocess.run([POWERSHELL_EXE, "-NoProfile", "-ExecutionPolicy", "Bypass",
                         "-File", windows_script, "-Action", "Reset"], check=True)
     sync()
     if args.action == "bootstrap":
