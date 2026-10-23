@@ -37,8 +37,8 @@ function Save-Baseline {
     Invoke-Wsl -WslArgs @('--terminate', $Distro)
     Invoke-Wsl -WslArgs @('--export', $Distro, "$Baseline.partial")
     Move-Item "$Baseline.partial" $Baseline
-    (Get-FileHash $Baseline -Algorithm SHA256).Hash | Set-Content $BaselineHash -Encoding ascii
-    [ordered]@{ distro=$Distro; imageUrl="$BaseUrl/$ImageName"; imageSha256=(Get-FileHash $Image -Algorithm SHA256).Hash; baseline=$Baseline; createdUtc=[DateTime]::UtcNow.ToString('o') } | ConvertTo-Json | Set-Content "$LabRoot\baseline.json" -Encoding UTF8
+    (Get-FileSha256 $Baseline) | Set-Content $BaselineHash -Encoding ascii
+    [ordered]@{ distro=$Distro; imageUrl="$BaseUrl/$ImageName"; imageSha256=(Get-FileSha256 $Image); baseline=$Baseline; createdUtc=[DateTime]::UtcNow.ToString('o') } | ConvertTo-Json | Set-Content "$LabRoot\baseline.json" -Encoding UTF8
     Write-Output "Saved baseline $Baseline"
 }
 
@@ -69,7 +69,7 @@ printf '%s\n' 'Ubuntu-Nix-Test blank baseline v2' > /etc/nix-lab-baseline
     Write-Output "Created $Distro and baseline $Baseline"
 } elseif ($Action -eq 'Reset') {
     if (!(Test-Path $Baseline) -or !(Test-Path $BaselineHash)) { throw 'Verified baseline is missing.' }
-    if ((Get-FileHash $Baseline -Algorithm SHA256).Hash -ne (Get-Content $BaselineHash -Raw).Trim()) { throw 'Baseline checksum mismatch.' }
+    if ((Get-FileSha256 $Baseline) -ne (Get-Content $BaselineHash -Raw).Trim()) { throw 'Baseline checksum mismatch.' }
     if ((Get-WslDistroList) -contains $Distro) {
         Invoke-Wsl -WslArgs @('-d', $Distro, '-u', 'root', '--cd', '/', '--exec', 'grep', '-Fxq', $Marker, '/etc/nix-lab-baseline')
         # Reset only the fixed disposable distribution after checking its marker and backup.
