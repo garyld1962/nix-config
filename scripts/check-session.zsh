@@ -1,5 +1,5 @@
 set -eu
-for tool in nix home-manager zsh starship direnv git rg fd fzf bat jq tmux just curl wget node npm pnpm python3 uv rsync shellcheck ast-grep sd gh gh-axi hyperfine xh defuddle herdr wsl-open; do
+for tool in nix home-manager zsh starship direnv git rg fd fzf bat jq tmux just curl wget node npm pnpm python3 uv rsync shellcheck ast-grep sd gh gh-axi hyperfine xh defuddle herdr wsl-open sox; do
   executable=$(command -v "$tool")
   resolved=$(readlink -f "$executable")
   [[ $resolved == /nix/store/* ]] || { print -u2 "Tool is outside Nix: $tool ($resolved)"; exit 1; }
@@ -7,16 +7,18 @@ done
 [[ :$PATH: == *:$HOME/.local/bin:* ]]
 (( ! $+functions[__wezterm_osc7] ))
 [[ $BROWSER == wsl-open ]]
+[[ $PULSE_SERVER == unix:/mnt/wslg/PulseServer ]]
+sox --help 2>&1 | grep -q '^AUDIO DEVICE DRIVERS:.*pulseaudio'
 [[ $(readlink -f "$(command -v xdg-open)") == /nix/store/* ]]
 [[ $(readlink -f "$(command -v open)") == /nix/store/* ]]
 rc=0; wsl-open >/dev/null 2>&1 || rc=$?
 (( rc == 64 ))
 if [[ -d /mnt/c ]]; then
   # check-shared.sh seeds PATH with fake Windows entries; the filter in home/shell.zsh
-  # must keep only the VS Code launcher and the Docker Desktop CLI.
+  # must keep only the VS Code launcher.
   [[ :$PATH: != *system32* ]]
+  [[ :$PATH: != *'/Docker/Docker/resources/bin:'* ]]
   [[ :$PATH: == *'/Microsoft VS Code/bin:'* ]]
-  [[ :$PATH: == *'/Docker/Docker/resources/bin:'* ]]
   [[ $(WSL_OPEN_DRY_RUN=1 wsl-open https://example.com) == 'rundll32.exe url.dll,FileProtocolHandler https://example.com' ]]
 fi
 [[ $(herdr --version) == 'herdr 0.7.5' ]]
@@ -50,6 +52,15 @@ printf '%s\n' 'export NIX_LAB_DIRENV_TEST=works' > child/.envrc
 direnv allow child
 direnv exec child /usr/bin/sh -c 'test "$NIX_LAB_DIRENV_TEST" = works'
 starship prompt >/dev/null
+mkdir -p junk/nested
+touch junk/Thumbs.db junk/desktop.ini junk/nested/report.pdf:Zone.Identifier junk/nested/keep.txt junk/keep.db
+mkdir -p 'junk/$RECYCLE.BIN/S-1-5-21'
+[[ $(winjunk -n junk | tail -1) == '4 item(s) would be removed (dry run)' ]]
+[[ -f junk/Thumbs.db ]]
+winjunk -y junk >/dev/null
+[[ ! -e junk/Thumbs.db && ! -e junk/desktop.ini && ! -e junk/nested/report.pdf:Zone.Identifier && ! -e 'junk/$RECYCLE.BIN' ]]
+[[ -f junk/nested/keep.txt && -f junk/keep.db ]]
+[[ $(winjunk -y junk) == "No Windows metadata files under junk" ]]
 git init -q git-test
 print 'PASS: clean Zsh login, Nix command paths, Windows PATH filter, wsl-open, history, completion, helpers, direnv, prompt, and Git'
 

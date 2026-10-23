@@ -2,7 +2,7 @@
 
 A developer first runs the shared bootstrap. A separate private installer can then add identities, authentication, secret access, and personal preferences. The shared bootstrap never runs the private installer.
 
-`post-install.sh` in the repository root is that installer for this team. It writes the Git identity file below, `~/.npmrc`, and the modules list described under optional shared modules; it installs the AI command-line tools under `~/.local`. It never stores secrets; `gh auth login` keeps its token in the GitHub CLI's own store.
+`post-install.sh` in the repository root is that installer for this team. It writes the Git identity file below, `~/.npmrc`, and the modules list described under optional shared modules; it installs the AI command-line tools under `~/.local`. With your confirmation it also adds this distribution to `integratedWslDistros` in Docker Desktop's `settings-store.json` on Windows and restarts Docker Desktop. It never stores secrets; `gh auth login` keeps its token in the GitHub CLI's own store.
 
 ## Git identity and preferences
 

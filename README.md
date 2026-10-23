@@ -58,8 +58,9 @@ The current shared profile contains the tools already verified in the original l
 - Node 22, pnpm 10, Python 3.12, and uv.
 - Zsh, Starship, completion, shared history, and portable shell helpers.
 - Herdr 0.7.5 with Zsh and the terminal theme.
+- SoX with the PulseAudio driver, pointed at the WSLg sound server through `PULSE_SERVER`.
 - Agent utilities for code search, replacement, copying, shell analysis, timing, HTTP requests, and HTML parsing.
-- On WSL, a PATH filter that keeps only the VS Code launcher and Docker Desktop CLI from the Windows PATH, and `wsl-open` (also `xdg-open`, `open`, and `BROWSER`) to open URLs and files with the Windows default handler.
+- On WSL, a PATH filter that keeps only the VS Code launcher from the Windows PATH, and `wsl-open` (also `xdg-open`, `open`, and `BROWSER`) to open URLs and files with the Windows default handler.
 
 Optional modules extend the profile per account. `toolchains` adds Go, .NET SDK 10, rustup with a gcc linker, and TypeScript. List the module name in `~/.config/shared-dev/modules` (one per line) and reapply; `post-install.sh` does this.
 
@@ -98,13 +99,13 @@ Run your private installer separately after the shared bootstrap. [The personal 
 bash post-install.sh
 ```
 
-It prompts for your Git name and email, signs you in to GitHub with `gh`, enables the optional `toolchains` module (Go, the .NET SDK, Rust, TypeScript) in your profile and reapplies it, and installs Claude Code, Codex, and Copilot CLI into `~/.local`. VS Code stays on Windows; the script adds the Remote - WSL extension so `code .` opens this distribution. Rerunning it updates the tools and keeps your answers as defaults.
+It prompts for your Git name and email, signs you in to GitHub with `gh`, enables the optional `toolchains` module (Go, the .NET SDK, Rust, TypeScript) in your profile and reapplies it, and installs Claude Code, Codex, and Copilot CLI into `~/.local`. When Docker Desktop is installed on Windows but its WSL integration for this distribution is off, the script offers to enable it. VS Code stays on Windows; the script adds the Remote - WSL extension so `code .` opens this distribution. Rerunning it updates the tools and keeps your answers as defaults.
 
 The shared Git configuration includes the optional `~/.config/git/personal.inc` file. Zsh loads the optional `~/.config/zsh/local.zsh` file. Reapplying the shared configuration does not manage or replace either file.
 
 Authentication and secret values stay outside Nix configuration and the Nix store. The bootstrap does not read a personal vault or copy credentials from another account.
 
-Docker, GPU support, AI coding assistants, browser automation (beyond opening links with `wsl-open`), repositories, and application data are not yet part of this shared profile. We will review these additions separately.
+Docker beyond the Docker Desktop integration that `post-install.sh` offers, GPU support, AI coding assistants, browser automation (beyond opening links with `wsl-open`), repositories, and application data are not yet part of this shared profile. We will review these additions separately.
 
 ## Maintain the shared configuration
 

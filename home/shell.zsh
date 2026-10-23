@@ -9,13 +9,11 @@ if [[ $PWD =~ ^/mnt/c/[Uu]sers/[^/]+$ || ${PWD:l} == /mnt/c/windows/system32 ]];
 fi
 
 # WSL appends the whole Windows PATH. Keep only the Windows tools listed here
-# (matched by glob) and drop every other /mnt/<drive>/ entry.
+# (matched by glob) and drop every other /mnt/<drive>/ entry. Docker is not kept:
+# Docker Desktop's WSL integration provides a Linux client at /usr/bin/docker.
 if [[ -d /mnt/c ]]; then
   local -a keep_windows_paths=(
     '*/Microsoft VS Code/bin'
-    # Docker Desktop WSL integration is not enabled for the distro; the Windows CLI
-    # is what provides docker. Remove this entry if integration is turned on.
-    '*/Docker/Docker/resources/bin'
   )
   local -a filtered_path=()
   local p pattern keep
@@ -32,6 +30,9 @@ if [[ -d /mnt/c ]]; then
   path=("${filtered_path[@]}")
   unset keep_windows_paths filtered_path p pattern keep
 fi
+
+# WSLg runs a PulseAudio server; SoX (play, rec) and other PulseAudio clients use it.
+export PULSE_SERVER=unix:/mnt/wslg/PulseServer
 
 setopt EXTENDED_HISTORY
 setopt HIST_EXPIRE_DUPS_FIRST
@@ -194,6 +195,49 @@ wttr() {
   command curl -s "https://wttr.in/${1}?format=3"
 }
 
+winjunk() {
+  # Remove the metadata Windows Explorer scatters into Linux folders: Thumbs.db and
+  # friends, desktop.ini, recycle-bin and System Volume Information folders, and the
+  # "name:Zone.Identifier" files that appear when files are copied in from Windows.
+  emulate -L zsh
+  setopt extended_glob null_glob
+  local dry=0 yes=0 root=.
+  while (( $# )); do
+    case $1 in
+      -n|--dry-run) dry=1 ;;
+      -y|--yes) yes=1 ;;
+      -h|--help) print 'Usage: winjunk [-n|--dry-run] [-y|--yes] [path]'; return 0 ;;
+      -*) print -u2 "Unknown option: $1"; return 64 ;;
+      *) root=$1 ;;
+    esac
+    shift
+  done
+  [[ -d $root ]] || { print -u2 "Not a directory: $root"; return 66; }
+
+  local -a junk
+  junk=(
+    "$root"/**/(#i)(thumbs.db|ehthumbs.db|ehthumbs_vista.db|desktop.ini)(DN.)
+    "$root"/**/*:Zone.Identifier(DN.)
+    "$root"/**/(#i)(\$RECYCLE.BIN|System\ Volume\ Information)(DN/)
+  )
+  if (( ${#junk} == 0 )); then
+    print "No Windows metadata files under $root"
+    return 0
+  fi
+  print -l -- "${junk[@]}"
+  if (( dry )); then
+    print "${#junk} item(s) would be removed (dry run)"
+    return 0
+  fi
+  if (( ! yes )); then
+    local answer
+    read -q "answer?Remove ${#junk} item(s)? [y/N] " || { print; print 'Nothing removed'; return 1; }
+    print
+  fi
+  rm -rf -- "${junk[@]}"
+  print "Removed ${#junk} item(s)"
+}
+
 helpers() {
   cat <<'EOF'
 Custom helpers:
@@ -206,6 +250,7 @@ Custom helpers:
   up <url>                 HTTP status and timing
   serve [port]             Serve the current directory
   wttr <place>             Compact weather
+  winjunk [-n] [-y] [path]  Remove Windows Explorer metadata files (Thumbs.db, desktop.ini, Zone.Identifier)
 EOF
 }
 

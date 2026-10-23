@@ -14,6 +14,8 @@
     unzip zip gnutar gzip bzip2 xz iproute2
     (callPackage ../packages/herdr { })
     (callPackage ../packages/wsl-open { })
+    # SoX with the PulseAudio driver so `play`/`rec` reach the WSLg sound server.
+    (sox.override { enableLibpulseaudio = true; })
   ];
   xdg.configFile."herdr/config.toml".source = ./herdr.toml;
   home.sessionVariables = {
