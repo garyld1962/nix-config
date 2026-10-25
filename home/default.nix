@@ -15,6 +15,7 @@
     (callPackage ../packages/herdr { })
     (callPackage ../packages/tuios { })
     (callPackage ../packages/wsl-open { })
+    (callPackage ../packages/wsl-clip { })
     # SoX with the PulseAudio driver so `play`/`rec` reach the WSLg sound server.
     (sox.override { enableLibpulseaudio = true; })
   ];

@@ -19,6 +19,7 @@
         herdr = pkgs.callPackage ./packages/herdr { };
         tuios = pkgs.callPackage ./packages/tuios { };
         wsl-open = pkgs.callPackage ./packages/wsl-open { };
+        wsl-clip = pkgs.callPackage ./packages/wsl-clip { };
       };
       homeModules.default = ./home/default.nix;
       homeModules.toolchains = ./home/toolchains.nix;
