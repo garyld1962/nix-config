@@ -10,10 +10,13 @@
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
   home.packages = with pkgs; [
     bat tmux curl wget
-    nodejs_22 pnpm_10 python312 uv
+    nodejs_22 pnpm_10_latest python312 uv
+    wrangler supabase-cli
     unzip zip gnutar gzip bzip2 xz iproute2
     (callPackage ../packages/herdr { })
+    (callPackage ../packages/tuios { })
     (callPackage ../packages/wsl-open { })
+    (callPackage ../packages/wsl-clip { })
     # SoX with the PulseAudio driver so `play`/`rec` reach the WSLg sound server.
     (sox.override { enableLibpulseaudio = true; })
   ];
@@ -63,6 +66,8 @@
       if [[ -f /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh ]]; then
         source /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh
       fi
+      # API tokens written by homelab's refresh-secrets, for non-interactive CLIs.
+      [[ -r "$HOME/.secrets" ]] && source "$HOME/.secrets"
     '';
     initContent = builtins.readFile ./shell.zsh;
   };

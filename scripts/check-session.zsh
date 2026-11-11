@@ -1,5 +1,5 @@
 set -eu
-for tool in nix home-manager zsh starship direnv git rg fd fzf bat jq tmux just curl wget node npm pnpm python3 uv rsync shellcheck ast-grep sd gh gh-axi hyperfine xh defuddle herdr wsl-open sox; do
+for tool in nix home-manager zsh starship direnv git rg fd fzf bat jq tmux just curl wget node npm pnpm python3 uv rsync shellcheck ast-grep sd gh gh-axi hyperfine xh defuddle herdr tuios wsl-open pbcopy pbpaste sox wrangler supabase; do
   executable=$(command -v "$tool")
   resolved=$(readlink -f "$executable")
   [[ $resolved == /nix/store/* ]] || { print -u2 "Tool is outside Nix: $tool ($resolved)"; exit 1; }
@@ -20,8 +20,11 @@ if [[ -d /mnt/c ]]; then
   [[ :$PATH: != *'/Docker/Docker/resources/bin:'* ]]
   [[ :$PATH: == *'/Microsoft VS Code/bin:'* ]]
   [[ $(WSL_OPEN_DRY_RUN=1 wsl-open https://example.com) == 'rundll32.exe url.dll,FileProtocolHandler https://example.com' ]]
+  [[ $(WSL_CLIP_DRY_RUN=1 pbcopy) == 'wl-copy' ]]
+  [[ $(WSL_CLIP_DRY_RUN=1 pbpaste) == 'wl-paste --no-newline' ]]
 fi
 [[ $(herdr --version) == 'herdr 0.7.5' ]]
+[[ $(tuios --version) == *0.10.1* ]]
 [[ $(node --version) == v22.* ]]
 [[ $(pnpm --version) == 10.* ]]
 [[ $(python3 --version) == 'Python 3.12.'* ]]

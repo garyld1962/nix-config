@@ -128,6 +128,17 @@ function Get-WslDistroBasePath {
     [string]$entry.BasePath -replace '^\\\\\?\\', ''
 }
 
+function Get-FileSha256 {
+    # Uses .NET directly: Get-FileHash lives in a module that Windows PowerShell cannot load
+    # when it inherits PowerShell 7's PSModulePath (for example when started from pwsh or wsl.exe).
+    param([Parameter(Mandatory)][string]$Path)
+    $stream = [IO.File]::OpenRead($Path)
+    try {
+        $sha = [Security.Cryptography.SHA256]::Create()
+        try { ([BitConverter]::ToString($sha.ComputeHash($stream))) -replace '-', '' } finally { $sha.Dispose() }
+    } finally { $stream.Dispose() }
+}
+
 function Get-UbuntuWslImage {
     param([Parameter(Mandatory)][string]$Release, [Parameter(Mandatory)][string]$ImageName, [Parameter(Mandatory)][string]$CacheDir)
     $baseUrl = "https://releases.ubuntu.com/$Release"
@@ -141,9 +152,9 @@ function Get-UbuntuWslImage {
         Write-Host "Downloading $ImageName to $CacheDir"
         & curl.exe --fail --location --retry 3 --output "$image.partial" "$baseUrl/$ImageName"
         if ($LASTEXITCODE -ne 0) { throw 'Image download failed.' }
-        if ((Get-FileHash "$image.partial" -Algorithm SHA256).Hash -ne $expected) { throw 'Downloaded image checksum mismatch.' }
+        if ((Get-FileSha256 "$image.partial") -ne $expected) { throw 'Downloaded image checksum mismatch.' }
         Move-Item "$image.partial" $image
-    } elseif ((Get-FileHash $image -Algorithm SHA256).Hash -ne $expected) {
+    } elseif ((Get-FileSha256 $image) -ne $expected) {
         throw "Cached image checksum mismatch: $image"
     }
     $image

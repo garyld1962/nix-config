@@ -4,7 +4,7 @@
   #   echo toolchains >> ~/.config/shared-dev/modules && bash scripts/apply-shared.sh
   # post-install.sh does this for you.
   home.packages = with pkgs; [
-    go
+    go_1_27
     dotnet-sdk_10
     # rustup manages toolchains under ~/.rustup; gcc supplies the linker it needs.
     rustup
