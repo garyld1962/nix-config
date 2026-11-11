@@ -14,6 +14,7 @@ This is the first shared profile. It carries over the tools from the verified WS
 | Workflow | tmux, just, ShellCheck, hyperfine, defuddle |
 | Audio | SoX (`sox`, `play`, `rec`) with the PulseAudio driver; `PULSE_SERVER` points at the WSLg sound server |
 | Terminal workspaces | Herdr 0.7.5, tuios 0.10.1 |
+| Cloud platforms | wrangler (Cloudflare), Supabase CLI; authentication is separate |
 
 The shared prompt shows the directory, Git state, command duration, and active project runtimes. History holds 50,000 entries and is shared between Zsh sessions. Completion skips directories that Zsh considers insecure, so a second account does not wait at an interactive trust prompt. Herdr uses Zsh and the terminal theme. uv uses the configured Python and does not automatically download other versions.
 

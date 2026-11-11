@@ -56,6 +56,7 @@ The current shared profile contains the tools already verified in the original l
 
 - Git, GitHub CLI and gh-axi, direnv with nix-direnv, common command-line and archive tools.
 - Node 22, pnpm 10, Python 3.12, and uv.
+- wrangler for Cloudflare and the Supabase CLI; authentication is separate.
 - Zsh, Starship, completion, shared history, and portable shell helpers.
 - Herdr 0.7.5 with Zsh and the terminal theme, and tuios 0.10.1.
 - SoX with the PulseAudio driver, pointed at the WSLg sound server through `PULSE_SERVER`.

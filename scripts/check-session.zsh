@@ -1,5 +1,5 @@
 set -eu
-for tool in nix home-manager zsh starship direnv git rg fd fzf bat jq tmux just curl wget node npm pnpm python3 uv rsync shellcheck ast-grep sd gh gh-axi hyperfine xh defuddle herdr tuios wsl-open pbcopy pbpaste sox; do
+for tool in nix home-manager zsh starship direnv git rg fd fzf bat jq tmux just curl wget node npm pnpm python3 uv rsync shellcheck ast-grep sd gh gh-axi hyperfine xh defuddle herdr tuios wsl-open pbcopy pbpaste sox wrangler supabase; do
   executable=$(command -v "$tool")
   resolved=$(readlink -f "$executable")
   [[ $resolved == /nix/store/* ]] || { print -u2 "Tool is outside Nix: $tool ($resolved)"; exit 1; }

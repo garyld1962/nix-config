@@ -11,6 +11,7 @@
   home.packages = with pkgs; [
     bat tmux curl wget
     nodejs_22 pnpm_10_latest python312 uv
+    wrangler supabase-cli
     unzip zip gnutar gzip bzip2 xz iproute2
     (callPackage ../packages/herdr { })
     (callPackage ../packages/tuios { })
