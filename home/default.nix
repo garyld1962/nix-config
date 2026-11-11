@@ -66,6 +66,8 @@
       if [[ -f /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh ]]; then
         source /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh
       fi
+      # API tokens written by homelab's refresh-secrets, for non-interactive CLIs.
+      [[ -r "$HOME/.secrets" ]] && source "$HOME/.secrets"
     '';
     initContent = builtins.readFile ./shell.zsh;
   };
