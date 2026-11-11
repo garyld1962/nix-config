@@ -11,7 +11,10 @@
   home.packages = with pkgs; [
     bat tmux curl wget
     nodejs_22 pnpm_10_latest python312 uv
-    wrangler supabase-cli
+    # wrangler's output also carries its build-time node_modules (typescript,
+    # vitest, esbuild, ...), which collide with other packages. Link only bin/.
+    (runCommand "wrangler-bin" { } "mkdir -p $out && ln -s ${wrangler}/bin $out/bin")
+    supabase-cli
     unzip zip gnutar gzip bzip2 xz iproute2
     (callPackage ../packages/herdr { })
     (callPackage ../packages/tuios { })
