@@ -20,6 +20,9 @@
     (callPackage ../packages/tuios { })
     (callPackage ../packages/wsl-open { })
     (callPackage ../packages/wsl-clip { })
+    # wl-copy/wl-paste on PATH so tools that look for a clipboard (e.g. `gh auth`
+    # device codes) reach the Windows clipboard through WSLg.
+    wl-clipboard
     # SoX with the PulseAudio driver so `play`/`rec` reach the WSLg sound server.
     (sox.override { enableLibpulseaudio = true; })
   ];
