@@ -61,7 +61,7 @@ The current shared profile contains the tools already verified in the original l
 - Herdr 0.7.5 with Zsh and the terminal theme, and tuios 0.10.1.
 - SoX with the PulseAudio driver, pointed at the WSLg sound server through `PULSE_SERVER`.
 - Agent utilities for code search, replacement, copying, shell analysis, timing, HTTP requests, and HTML parsing.
-- On WSL, a PATH filter that keeps only the VS Code launcher from the Windows PATH, and `wsl-open` (also `xdg-open`, `open`, and `BROWSER`) to open URLs and files with the Windows default handler, plus `pbcopy` and `pbpaste` for the Windows clipboard through WSLg.
+- On WSL, a PATH filter that keeps only the VS Code launcher from the Windows PATH, and `wsl-open` (also `xdg-open`, `open`, and `BROWSER`) to open URLs and files with the Windows default handler, plus `pbcopy` and `pbpaste` for the Windows clipboard through WSLg. `wl-copy` and `wl-paste` are also on PATH, so tools that look for a clipboard utility (for example `gh auth` device codes) reach the Windows clipboard too.
 
 Optional modules extend the profile per account. `toolchains` adds Go, .NET SDK 10, rustup with a gcc linker, and TypeScript. List the module name in `~/.config/shared-dev/modules` (one per line) and reapply; `post-install.sh` does this.
 
