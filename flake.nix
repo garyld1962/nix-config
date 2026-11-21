@@ -20,6 +20,7 @@
         tuios = pkgs.callPackage ./packages/tuios { };
         wsl-open = pkgs.callPackage ./packages/wsl-open { };
         wsl-clip = pkgs.callPackage ./packages/wsl-clip { };
+        gh-clone-recent = pkgs.callPackage ./packages/gh-clone-recent { };
       };
       homeModules.default = ./home/default.nix;
       homeModules.toolchains = ./home/toolchains.nix;
