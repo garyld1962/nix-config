@@ -5,12 +5,16 @@ This is the first shared profile. It carries over the tools from the verified WS
 | Area | Included |
 | --- | --- |
 | Runtimes | Node 22, npm, pnpm 10, Python 3.12, uv |
-| Shell | Zsh, Starship, Bash integration, fzf completion, shared history |
+| Shell | Zsh, Starship, Bash integration, fzf completion, zoxide (`z`), shared history |
 | Project environments | direnv, nix-direnv, example Nix development shell |
-| Version control | Git, gh, gh-axi 0.1.35; authentication is separate |
+| Version control | Git with Git LFS and delta diffs, gh, gh-axi 0.1.35; authentication is separate |
+| Editor | micro, set as `EDITOR` |
 | Search and text | ripgrep, fd, jq, bat, ast-grep, sd |
 | Files and archives | rsync, unzip, zip, tar, gzip, bzip2, xz |
-| Network | curl, wget, xh, iproute2 |
+| Network | curl, wget, xh, iproute2, dig |
+| Build | gcc, GNU Make, pkg-config |
+| Databases | PostgreSQL client (`psql`), SQLite (`sqlite3`) |
+| Monitoring | btop |
 | Workflow | tmux, just, ShellCheck, hyperfine, defuddle |
 | Audio | SoX (`sox`, `play`, `rec`) with the PulseAudio driver; `PULSE_SERVER` points at the WSLg sound server |
 | Terminal workspaces | Herdr 0.7.5, tuios 0.10.1 |
@@ -20,6 +24,8 @@ The shared prompt shows the directory, Git state, command duration, and active p
 
 Shell helpers include directory listing, filename search, disk usage, listening ports, archive extraction, JSON formatting, HTTP checks, a local HTTP server, weather for an explicitly supplied place, and `winjunk` to remove the metadata files Windows Explorer leaves in Linux folders (Thumbs.db, desktop.ini, recycle-bin folders, and `:Zone.Identifier` files). On WSL the Windows entries that WSL appends to PATH are dropped, except for the VS Code launcher; Docker comes from Docker Desktop's WSL integration instead. `wsl-open` (also available as `xdg-open` and `open`, and set as `BROWSER`) opens URLs and files with the Windows default handler. `pbcopy` and `pbpaste` copy to and paste from the Windows clipboard through WSLg's Wayland socket, so they also work in SSH sessions and keep UTF-8 intact.
 
+Git defaults to `main` for new repositories, rebases on `git pull` (stashing and restoring uncommitted changes around it), and records conflict resolutions for reuse (`rerere`). A setting in `~/.config/git/personal.inc` overrides any of these. A weekly user timer deletes profile generations older than 14 days and collects Nix garbage.
+
 The shared profile contains no Git identity, vault reference, account token, personal location, or authentication setup. Optional personal Git and shell files are loaded at runtime.
 
 ## Optional modules
@@ -27,6 +33,7 @@ The shared profile contains no Git identity, vault reference, account token, per
 | Module | Included | Enable |
 | --- | --- | --- |
 | `toolchains` | Go, .NET SDK 10, rustup, gcc, TypeScript | `~/.config/shared-dev/modules`; see the personal setup contract |
+| `yazi` | Yazi terminal file manager | `~/.config/shared-dev/modules`; see the personal setup contract |
 
 ## Selected additions
 

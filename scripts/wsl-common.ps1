@@ -7,21 +7,26 @@ function Test-UbuntuUsername {
     [bool]($Name -cmatch '^[a-z][-a-z0-9_]*$' -and $Name.Length -le 32 -and $Name -ne 'root')
 }
 
-function Find-WslConfigNetworkingMode {
-    # Locates the [wsl2] section and its networkingMode key. Indices are -1 when absent.
-    param([string[]]$Lines)
+function Find-WslConfigKey {
+    # Locates a section and one key in it. Indices are -1 when absent.
+    param([string[]]$Lines, [Parameter(Mandatory)][string]$Section, [Parameter(Mandatory)][string]$Key)
     $found = [pscustomobject]@{ Header = -1; End = @($Lines).Count; Key = -1; Value = $null }
     for ($i = 0; $i -lt @($Lines).Count; $i++) {
-        if ($Lines[$i] -imatch '^\s*\[wsl2\]\s*$') { $found.Header = $i; break }
+        if ($Lines[$i] -imatch "^\s*\[$([regex]::Escape($Section))\]\s*$") { $found.Header = $i; break }
     }
     if ($found.Header -lt 0) { return $found }
     for ($i = $found.Header + 1; $i -lt @($Lines).Count; $i++) {
         if ($Lines[$i] -match '^\s*\[') { $found.End = $i; break }
     }
     for ($i = $found.Header + 1; $i -lt $found.End; $i++) {
-        if ($Lines[$i] -imatch '^\s*networkingMode\s*=\s*(.*?)\s*$') { $found.Key = $i; $found.Value = $Matches[1]; break }
+        if ($Lines[$i] -imatch "^\s*$([regex]::Escape($Key))\s*=\s*(.*?)\s*$") { $found.Key = $i; $found.Value = $Matches[1]; break }
     }
     $found
+}
+
+function Find-WslConfigNetworkingMode {
+    param([string[]]$Lines)
+    Find-WslConfigKey -Lines $Lines -Section 'wsl2' -Key 'networkingMode'
 }
 
 function Get-WslConfigNetworkingMode {
@@ -43,6 +48,25 @@ function Merge-WslConfigMirrored {
         $result[$found.Key] = 'networkingMode=mirrored'
     } else {
         $result.Insert($found.Header + 1, 'networkingMode=mirrored')
+    }
+    [IO.File]::WriteAllLines($Path, [string[]]$result)
+    $true
+}
+
+function Merge-WslConfigMemoryReclaim {
+    # Adds autoMemoryReclaim=gradual under [experimental] so WSL returns idle memory to Windows.
+    # An existing value, whatever it is, is the user's choice and stays.
+    param([Parameter(Mandatory)][string]$Path)
+    $result = New-Object 'Collections.Generic.List[string]'
+    if (Test-Path -LiteralPath $Path) { $result.AddRange([string[]][IO.File]::ReadAllLines($Path)) }
+    $found = Find-WslConfigKey -Lines ([string[]]$result) -Section 'experimental' -Key 'autoMemoryReclaim'
+    if ($found.Key -ge 0) { return $false }
+    if ($found.Header -lt 0) {
+        if ($result.Count -gt 0) { $result.Add('') }
+        $result.Add('[experimental]')
+        $result.Add('autoMemoryReclaim=gradual')
+    } else {
+        $result.Insert($found.Header + 1, 'autoMemoryReclaim=gradual')
     }
     [IO.File]::WriteAllLines($Path, [string[]]$result)
     $true

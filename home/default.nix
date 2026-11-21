@@ -8,8 +8,17 @@
   programs.home-manager.enable = true;
   nix.package = pkgs.nix;
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
+  # Weekly user timer: drop profile generations older than 14 days, then collect garbage.
+  nix.gc = {
+    automatic = true;
+    dates = "weekly";
+    options = "--delete-older-than 14d";
+  };
   home.packages = with pkgs; [
-    bat tmux curl wget
+    bat tmux curl wget micro btop
+    # Enough to compile C extensions and run Makefiles outside a project dev shell.
+    gcc gnumake pkg-config
+    postgresql sqlite dig
     nodejs_22 pnpm_10_latest python312 uv
     # wrangler's output also carries its build-time node_modules (typescript,
     # vitest, esbuild, ...), which collide with other packages. Link only bin/.
@@ -28,6 +37,7 @@
   ];
   xdg.configFile."herdr/config.toml".source = ./herdr.toml;
   home.sessionVariables = {
+    EDITOR = "micro";
     # Project Python environments use the configured interpreter unless explicitly overridden.
     UV_PYTHON_DOWNLOADS = "never";
     # Opens links in the Windows default browser under WSL; xdg-open elsewhere.
@@ -35,6 +45,18 @@
   };
   home.sessionPath = [ "$HOME/.local/bin" ];
   programs.git.enable = true;
+  programs.git.lfs.enable = true;
+  # Shared defaults; personal.inc below is included last and can override them.
+  programs.git.settings = {
+    init.defaultBranch = "main";
+    pull.rebase = true;
+    rebase.autoStash = true;
+    rerere.enabled = true;
+  };
+  programs.delta = {
+    enable = true;
+    enableGitIntegration = true;
+  };
   # A private installer may write identity and preferences here.
   # This file is optional and is never read into the Nix store.
   programs.git.includes = [ { path = "${config.xdg.configHome}/git/personal.inc"; } ];
@@ -43,6 +65,7 @@
     enable = true;
     nix-direnv.enable = true;
   };
+  programs.zoxide.enable = true;
   programs.fzf = {
     enable = true;
     enableZshIntegration = true;

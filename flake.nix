@@ -23,6 +23,7 @@
       };
       homeModules.default = ./home/default.nix;
       homeModules.toolchains = ./home/toolchains.nix;
+      homeModules.yazi = ./home/yazi.nix;
       lib.mkHomeConfiguration = { username, homeDirectory, extraModules ? [ ] }:
         home-manager.lib.homeManagerConfiguration {
           inherit pkgs;
