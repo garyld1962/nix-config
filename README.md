@@ -15,7 +15,7 @@ irm https://raw.githubusercontent.com/garyld1962/nix-config/main/dev-setup.ps1 |
 The script:
 
 - prompts for your Linux username and password, then shows a summary and asks for confirmation before changing anything;
-- installs or updates WSL 2 and enables mirrored networking in `.wslconfig` (if WSL was missing, it asks you to reboot and rerun);
+- installs or updates WSL 2, enables mirrored networking in `.wslconfig`, and adds `autoMemoryReclaim=gradual` there when no value is set, so WSL returns idle memory to Windows (if WSL was missing, it asks you to reboot and rerun);
 - imports Ubuntu 26.04.1 LTS from a checksum-verified image into `%LOCALAPPDATA%\WSL\Ubuntu`;
 - clones this repository inside the new distribution and runs `bootstrap.sh` as your user.
 
@@ -54,7 +54,7 @@ Open a new terminal after installation.
 
 The current shared profile contains the tools already verified in the original lab. [The tool list](docs/shared-environment.md) is the starting point for reviewing the opinionated environment.
 
-- Git, GitHub CLI and gh-axi, direnv with nix-direnv, common command-line and archive tools.
+- Git with Git LFS and delta diffs, GitHub CLI and gh-axi, direnv with nix-direnv, the micro editor, common command-line and archive tools.
 - Node 22, pnpm 10, Python 3.12, and uv.
 - wrangler for Cloudflare and the Supabase CLI; authentication is separate.
 - Zsh, Starship, completion, shared history, and portable shell helpers.
@@ -63,7 +63,7 @@ The current shared profile contains the tools already verified in the original l
 - Agent utilities for code search, replacement, copying, shell analysis, timing, HTTP requests, and HTML parsing.
 - On WSL, a PATH filter that keeps only the VS Code launcher from the Windows PATH, and `wsl-open` (also `xdg-open`, `open`, and `BROWSER`) to open URLs and files with the Windows default handler, plus `pbcopy` and `pbpaste` for the Windows clipboard through WSLg. `wl-copy` and `wl-paste` are also on PATH, so tools that look for a clipboard utility (for example `gh auth` device codes) reach the Windows clipboard too.
 
-Optional modules extend the profile per account. `toolchains` adds Go, .NET SDK 10, rustup with a gcc linker, and TypeScript. List the module name in `~/.config/shared-dev/modules` (one per line) and reapply; `post-install.sh` does this.
+Optional modules extend the profile per account. `toolchains` adds Go, .NET SDK 10, rustup with a gcc linker, and TypeScript. `yazi` adds the Yazi terminal file manager. List the module name in `~/.config/shared-dev/modules` (one per line) and reapply; `post-install.sh` does this.
 
 [flake.lock](flake.lock) pins Nixpkgs and Home Manager. The gh-axi package also has a locked npm dependency tree. Package installation happens in Nix builds; activation does not run global npm installs.
 
@@ -100,7 +100,7 @@ Run your private installer separately after the shared bootstrap. [The personal 
 bash post-install.sh
 ```
 
-It prompts for your Git name and email, signs you in to GitHub with `gh`, enables the optional `toolchains` module (Go, the .NET SDK, Rust, TypeScript) in your profile and reapplies it, and installs Claude Code, Codex, and Copilot CLI into `~/.local`. When Docker Desktop is installed on Windows but its WSL integration for this distribution is off, the script offers to enable it. VS Code stays on Windows; the script adds the Remote - WSL extension so `code .` opens this distribution. Rerunning it updates the tools and keeps your answers as defaults.
+It prompts for your Git name and email, signs you in to GitHub with `gh`, enables the optional `toolchains` (Go, the .NET SDK, Rust, TypeScript) and `yazi` modules in your profile and reapplies it, and installs Claude Code, Codex, and Copilot CLI into `~/.local`. When Docker Desktop is installed on Windows but its WSL integration for this distribution is off, the script offers to enable it. VS Code stays on Windows; the script adds the Remote - WSL extension so `code .` opens this distribution. Rerunning it updates the tools and keeps your answers as defaults.
 
 The shared Git configuration includes the optional `~/.config/git/personal.inc` file. Zsh loads the optional `~/.config/zsh/local.zsh` file. Reapplying the shared configuration does not manage or replace either file.
 
@@ -123,6 +123,7 @@ Docker beyond the Docker Desktop integration that `post-install.sh` offers, GPU 
 | [home/default.nix](home/default.nix) | Shared packages and shell configuration |
 | [home/agentic-tools.nix](home/agentic-tools.nix) | Shared agent utilities |
 | [home/toolchains.nix](home/toolchains.nix) | Optional module: Go, .NET SDK, rustup, gcc, TypeScript |
+| [home/yazi.nix](home/yazi.nix) | Optional module: Yazi terminal file manager |
 | [home/shell.zsh](home/shell.zsh) | Shell preferences and helpers |
 | [home/starship.toml](home/starship.toml) | Shared prompt |
 | [home/herdr.toml](home/herdr.toml) | Shared Herdr settings |

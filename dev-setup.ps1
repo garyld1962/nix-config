@@ -113,6 +113,7 @@ try {
         "  Username:      $user",
         "  Image:         $ImageName (Ubuntu $ImageRelease)",
         '  Networking:    mirrored (.wslconfig; WSL restarts if this changes)',
+        '  Memory:        autoMemoryReclaim=gradual when unset (.wslconfig; no memory cap is set)',
         "  Repository:    $Repo ($Branch)"
     if ($existingUser) { Write-Output '  Existing distribution: resuming at the bootstrap stage.' }
     if ((Read-Host 'Proceed? [y/N]') -notmatch '^(y|yes)$') { Write-Output 'No changes made.'; return }
@@ -127,8 +128,11 @@ try {
     if ($LASTEXITCODE -ne 0) { Write-Warning 'wsl --update failed (Microsoft Store unreachable?). Continuing with the installed version.' }
     $wslVersion = Get-WslVersion
     if (-not $wslVersion -or $wslVersion -lt [version]'2.0.0') { throw "WSL 2.0.0 or newer is required (found '$wslVersion'). Run 'wsl --update' and retry." }
-    if (Merge-WslConfigMirrored -Path $WslConfig) {
-        Write-Output 'Enabled mirrored networking in .wslconfig; restarting WSL.'
+    # Both merges must run, so neither sits behind a short-circuiting -or.
+    $mirrored = Merge-WslConfigMirrored -Path $WslConfig
+    $reclaim = Merge-WslConfigMemoryReclaim -Path $WslConfig
+    if ($mirrored -or $reclaim) {
+        Write-Output 'Updated .wslconfig (mirrored networking, memory reclaim); restarting WSL.'
         Invoke-Wsl -WslArgs @('--shutdown')
     }
 

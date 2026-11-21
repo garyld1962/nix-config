@@ -10,7 +10,7 @@ if [[ ${1:-} == --help ]]; then
     'Personal setup after the shared bootstrap:' \
     '  - prompt for your Git name and email (~/.config/git/personal.inc)' \
     '  - sign in to GitHub with gh (skipped when already signed in)' \
-    '  - enable the optional toolchains module (Go, .NET SDK, rustup, TypeScript) and reapply the profile' \
+    '  - enable the optional toolchains (Go, .NET SDK, rustup, TypeScript) and yazi modules and reapply the profile' \
     '  - install the Rust stable toolchain through rustup' \
     '  - install Claude Code, Codex, and Copilot CLI under ~/.local' \
     '  - offer to enable Docker Desktop WSL integration for this distribution' \
@@ -61,9 +61,11 @@ else
 fi
 
 # ---------------------------------------------------------------------------
-step 'Shared profile: enable the toolchains module and reapply'
+step 'Shared profile: enable the toolchains and yazi modules and reapply'
 modules_file=$config_home/shared-dev/modules
-grep -Fxq toolchains "$modules_file" 2>/dev/null || printf 'toolchains\n' >>"$modules_file"
+for module in toolchains yazi; do
+  grep -Fxq "$module" "$modules_file" 2>/dev/null || printf '%s\n' "$module" >>"$modules_file"
+done
 bash "$root/scripts/apply-shared.sh"
 # Make the freshly activated profile visible to the rest of this script.
 export PATH=$HOME/.nix-profile/bin:$HOME/.local/bin:$HOME/.cargo/bin:$PATH
@@ -210,7 +212,7 @@ fi
 
 # ---------------------------------------------------------------------------
 step 'Installed versions'
-for t in go dotnet cargo rustc tsc claude codex copilot docker code; do
+for t in go dotnet cargo rustc tsc yazi claude codex copilot docker code; do
   if [[ $t == docker ]]; then
     # Only the Linux client from Docker Desktop's WSL integration counts, not the Windows stub.
     if [[ -x /usr/bin/docker ]]; then

@@ -29,6 +29,7 @@ The shared flake exports optional Home Manager modules as `homeModules.<name>`. 
 | Module | Adds |
 | --- | --- |
 | `toolchains` | Go, .NET SDK 10, rustup with a gcc linker, TypeScript; `~/go/bin`, `~/.cargo/bin`, and `~/.dotnet/tools` on PATH |
+| `yazi` | Yazi terminal file manager with its preview tools; `y` opens it and changes to the last directory on exit |
 
 rustup from the module manages Rust toolchains under `~/.rustup` as usual; run `rustup default stable` once (post-install.sh does this).
 

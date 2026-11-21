@@ -64,6 +64,40 @@ Describe 'Merge-WslConfigMirrored' {
     }
 }
 
+Describe 'Merge-WslConfigMemoryReclaim' {
+    BeforeEach { $path = Join-Path $TestDrive "$([guid]::NewGuid())\.wslconfig"; New-Item -ItemType Directory -Path (Split-Path $path) | Out-Null }
+
+    It 'creates the file when absent' {
+        Merge-WslConfigMemoryReclaim $path | Should -BeTrue
+        [IO.File]::ReadAllLines($path) | Should -Be @('[experimental]', 'autoMemoryReclaim=gradual')
+    }
+    It 'leaves this machine''s file unchanged' {
+        [IO.File]::WriteAllText($path, $script:Mirrored)
+        Merge-WslConfigMemoryReclaim $path | Should -BeFalse
+        [IO.File]::ReadAllText($path) | Should -BeExactly $script:Mirrored
+    }
+    It 'keeps an existing value' {
+        [IO.File]::WriteAllText($path, "[experimental]`nautoMemoryReclaim = disabled")
+        Merge-WslConfigMemoryReclaim $path | Should -BeFalse
+        [IO.File]::ReadAllLines($path) | Should -Be @('[experimental]', 'autoMemoryReclaim = disabled')
+    }
+    It 'adds the key when [experimental] has none' {
+        [IO.File]::WriteAllText($path, "[wsl2]`nmemory=4GB`n[experimental]`nsparseVhd=true")
+        Merge-WslConfigMemoryReclaim $path | Should -BeTrue
+        [IO.File]::ReadAllLines($path) | Should -Be @('[wsl2]', 'memory=4GB', '[experimental]', 'autoMemoryReclaim=gradual', 'sparseVhd=true')
+    }
+    It 'appends the section when absent and leaves memory unset' {
+        [IO.File]::WriteAllText($path, "[wsl2]`nnetworkingMode=mirrored")
+        Merge-WslConfigMemoryReclaim $path | Should -BeTrue
+        [IO.File]::ReadAllLines($path) | Should -Be @('[wsl2]', 'networkingMode=mirrored', '', '[experimental]', 'autoMemoryReclaim=gradual')
+    }
+    It 'does not count the key outside [experimental]' {
+        [IO.File]::WriteAllText($path, "[wsl2]`nautoMemoryReclaim=gradual")
+        Merge-WslConfigMemoryReclaim $path | Should -BeTrue
+        [IO.File]::ReadAllLines($path) | Should -Be @('[wsl2]', 'autoMemoryReclaim=gradual', '', '[experimental]', 'autoMemoryReclaim=gradual')
+    }
+}
+
 Describe 'Get-WslConfigNetworkingMode' {
     It 'returns the value inside [wsl2] with surrounding whitespace removed' {
         Get-WslConfigNetworkingMode -Lines @('[wsl2]', 'networkingMode = NAT ', '[experimental]') | Should -BeExactly 'NAT'

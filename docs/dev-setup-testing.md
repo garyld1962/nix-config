@@ -48,7 +48,7 @@ Run every command from a normal (not elevated) PowerShell window. Replace the br
    ```
 
    Expected: prompts for username and password, a summary, `Proceed? [y/N]`, then
-   `wsl --update`, `Enabled mirrored networking in .wslconfig; restarting WSL.` (only if
+   `wsl --update`, `Updated .wslconfig (mirrored networking, memory reclaim); restarting WSL.` (only if
    `.wslconfig` did not already set it), the image download with a curl progress bar,
    `Importing Ubuntu-DevTest into ...`, apt output, the Nix install and Home Manager activation,
    and finally `Done. Open 'Ubuntu-DevTest' from the Start menu, or run: wsl -d Ubuntu-DevTest`.
