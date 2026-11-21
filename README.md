@@ -100,7 +100,7 @@ Run your private installer separately after the shared bootstrap. [The personal 
 bash post-install.sh
 ```
 
-It prompts for your Git name and email, signs you in to GitHub with `gh`, enables the optional `toolchains` (Go, the .NET SDK, Rust, TypeScript) and `yazi` modules in your profile and reapplies it, and installs Claude Code, Codex, and Copilot CLI into `~/.local`. When Docker Desktop is installed on Windows but its WSL integration for this distribution is off, the script offers to enable it. VS Code stays on Windows; the script adds the Remote - WSL extension so `code .` opens this distribution. Rerunning it updates the tools and keeps your answers as defaults.
+It prompts for your Git name and email, signs you in to GitHub with `gh`, enables the optional `toolchains` (Go, the .NET SDK, Rust, TypeScript) and `yazi` modules in your profile and reapplies it, and installs Claude Code, Codex, and Copilot CLI into `~/.local`. When Docker Desktop is installed on Windows but its WSL integration for this distribution is off, the script offers to enable it. It links `~/Desktop`, `~/Documents`, and `~/Downloads` to the matching Windows folders. VS Code stays on Windows; the script adds the Remote - WSL extension so `code .` opens this distribution. Rerunning it updates the tools and keeps your answers as defaults.
 
 The shared Git configuration includes the optional `~/.config/git/personal.inc` file. Zsh loads the optional `~/.config/zsh/local.zsh` file. Reapplying the shared configuration does not manage or replace either file.
 

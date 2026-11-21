@@ -195,7 +195,7 @@ wttr() {
   command curl -s "https://wttr.in/${1}?format=3"
 }
 
-winjunk() {
+clean-files() {
   # Remove the metadata Windows Explorer scatters into Linux folders: Thumbs.db and
   # friends, desktop.ini, recycle-bin and System Volume Information folders, and the
   # "name:Zone.Identifier" files that appear when files are copied in from Windows.
@@ -206,7 +206,7 @@ winjunk() {
     case $1 in
       -n|--dry-run) dry=1 ;;
       -y|--yes) yes=1 ;;
-      -h|--help) print 'Usage: winjunk [-n|--dry-run] [-y|--yes] [path]'; return 0 ;;
+      -h|--help) print 'Usage: clean-files [-n|--dry-run] [-y|--yes] [path]'; return 0 ;;
       -*) print -u2 "Unknown option: $1"; return 64 ;;
       *) root=$1 ;;
     esac
@@ -238,6 +238,9 @@ winjunk() {
   print "Removed ${#junk} item(s)"
 }
 
+# Earlier name, kept so existing habits and scripts still work.
+winjunk() { clean-files "$@"; }
+
 helpers() {
   cat <<'EOF'
 Custom helpers:
@@ -250,7 +253,7 @@ Custom helpers:
   up <url>                 HTTP status and timing
   serve [port]             Serve the current directory
   wttr <place>             Compact weather
-  winjunk [-n] [-y] [path]  Remove Windows Explorer metadata files (Thumbs.db, desktop.ini, Zone.Identifier)
+  clean-files [-n] [-y] [path]  Remove Windows Explorer metadata files (Thumbs.db, desktop.ini, Zone.Identifier)
 EOF
 }
 

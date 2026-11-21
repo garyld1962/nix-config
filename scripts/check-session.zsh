@@ -58,9 +58,9 @@ starship prompt >/dev/null
 mkdir -p junk/nested
 touch junk/Thumbs.db junk/desktop.ini junk/nested/report.pdf:Zone.Identifier junk/nested/keep.txt junk/keep.db
 mkdir -p 'junk/$RECYCLE.BIN/S-1-5-21'
-[[ $(winjunk -n junk | tail -1) == '4 item(s) would be removed (dry run)' ]]
+[[ $(clean-files -n junk | tail -1) == '4 item(s) would be removed (dry run)' ]]
 [[ -f junk/Thumbs.db ]]
-winjunk -y junk >/dev/null
+clean-files -y junk >/dev/null
 [[ ! -e junk/Thumbs.db && ! -e junk/desktop.ini && ! -e junk/nested/report.pdf:Zone.Identifier && ! -e 'junk/$RECYCLE.BIN' ]]
 [[ -f junk/nested/keep.txt && -f junk/keep.db ]]
 [[ $(winjunk -y junk) == "No Windows metadata files under junk" ]]
