@@ -29,6 +29,7 @@
     (callPackage ../packages/tuios { })
     (callPackage ../packages/wsl-open { })
     (callPackage ../packages/wsl-clip { })
+    (callPackage ../packages/gh-clone-recent { })
     # wl-copy/wl-paste on PATH so tools that look for a clipboard (e.g. `gh auth`
     # device codes) reach the Windows clipboard through WSLg.
     wl-clipboard
