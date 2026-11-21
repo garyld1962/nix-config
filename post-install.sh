@@ -14,6 +14,7 @@ if [[ ${1:-} == --help ]]; then
     '  - install the Rust stable toolchain through rustup' \
     '  - install Claude Code, Codex, and Copilot CLI under ~/.local' \
     '  - offer to enable Docker Desktop WSL integration for this distribution' \
+    '  - link ~/Desktop, ~/Documents, and ~/Downloads to the Windows folders' \
     '  - connect VS Code on Windows to this distribution (Remote - WSL)'
   exit 0
 fi
@@ -194,6 +195,32 @@ else
       printf 'Skipped. Enable it later in Docker Desktop: Settings > Resources > WSL integration.\n'
     fi
   fi
+fi
+
+# ---------------------------------------------------------------------------
+step 'Windows folders: ~/Desktop, ~/Documents, ~/Downloads'
+powershell=/mnt/c/Windows/System32/WindowsPowerShell/v1.0/powershell.exe
+if [[ ! -x $powershell ]]; then
+  warn 'Windows PowerShell was not found; skipped the folder links.'
+else
+  # Ask Windows where the folders are: OneDrive can move Desktop and Documents.
+  mapfile -t win_folders < <(win "$powershell" -NoProfile -Command \
+    "[Environment]::GetFolderPath('Desktop'); [Environment]::GetFolderPath('MyDocuments'); (New-Object -ComObject Shell.Application).NameSpace('shell:Downloads').Self.Path" \
+    2>/dev/null | tr -d '\r')
+  folder_names=(Desktop Documents Downloads)
+  for i in 0 1 2; do
+    link=$HOME/${folder_names[i]}
+    target=
+    [[ -z ${win_folders[i]:-} ]] || target=$(wslpath -u "${win_folders[i]}" 2>/dev/null || true)
+    if [[ -z $target || ! -d $target ]]; then
+      warn "Could not find the Windows ${folder_names[i]} folder; skipped."
+    elif [[ -e $link && ! -L $link ]]; then
+      printf '%s already exists and is not a link; left alone.\n' "$link"
+    else
+      ln -sfn "$target" "$link"
+      printf '%s -> %s\n' "$link" "$target"
+    fi
+  done
 fi
 
 # ---------------------------------------------------------------------------
