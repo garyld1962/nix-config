@@ -56,7 +56,8 @@ step 'GitHub CLI sign-in'
 if gh auth status >/dev/null 2>&1; then
   gh auth status 2>&1 | head -2
 elif $interactive; then
-  gh auth login
+  # SSH protocol: gh offers to generate an SSH key and uploads it to the account.
+  gh auth login -h github.com -p ssh -w
 else
   warn 'No terminal; skipped gh auth login.'
 fi
